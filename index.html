@@ -96,21 +96,25 @@ input[type=text]:focus{border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,
   flex-direction:column;
   padding:0;
   z-index:5;
+  /* must be full viewport */
+  width:100vw;
+  height:100vh;
 }
 /* Header */
 #hdr{
   display:flex;align-items:center;justify-content:space-between;
-  padding:7px 14px;
+  padding:6px 12px;
   background:#0a1624;
   border-bottom:1px solid #1c3050;
   flex-shrink:0;
   gap:8px;
+  height:52px;
 }
-.score-block{text-align:center;min-width:50px;}
+.score-block{text-align:center;min-width:48px;}
 .score-label{font-size:9px;letter-spacing:2px;color:#2a5070;}
-.score-num{font-size:30px;font-weight:900;line-height:1;}
+.score-num{font-size:28px;font-weight:900;line-height:1;}
 .score-num.blue{color:#00e5ff;} .score-num.red{color:#ff3d6e;}
-#tmr{font-size:22px;font-weight:900;color:#ffe04b;letter-spacing:3px;min-width:60px;text-align:center;}
+#tmr{font-size:20px;font-weight:900;color:#ffe04b;letter-spacing:3px;min-width:58px;text-align:center;}
 .mode-badge{font-size:9px;letter-spacing:2px;padding:2px 8px;border:1px solid #1c3050;border-radius:2px;color:#2a5070;margin-top:3px;display:inline-block;}
 .mode-badge.ranked{border-color:#ffe04b;color:#ffe04b;}
 .mode-badge.online{border-color:#00ff88;color:#00ff88;}
@@ -120,19 +124,21 @@ input[type=text]:focus{border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,
 }
 #pause-btn:hover{border-color:#00e5ff;color:#00e5ff;}
 
-/* Canvas wrapper — fills all remaining height */
+/* Canvas wrapper — fills ALL remaining height after header */
 #canvas-wrap{
-  flex:1;
   position:relative;
   overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  width:100%;
+  /* calc full viewport minus header */
+  height:calc(100vh - 52px);
+  flex-shrink:0;
 }
 #gc{
   display:block;
   touch-action:none;
   cursor:none;
+  position:absolute;
+  top:0; left:0;
 }
 
 /* ===== PAUSE OVERLAY ===== */
@@ -424,26 +430,26 @@ document.getElementById('btn-rename').onclick   = () => { myNick = null; LS.set(
 
 // Leaderboard
 document.getElementById('btn-lb').onclick = () => {
-  lbPush(myNick, myElo);
+  lbPush(myNick, myElo); // make sure current player is in lb
   const rows = lbGet();
   const el = document.getElementById('lb-list');
   el.innerHTML = '';
   if (!rows.length) {
-    el.innerHTML = '<div style="color:#2a5070;text-align:center;padding:16px;">No data yet — play some games!</div>';
+    el.innerHTML = '<div style="color:#2a5070;text-align:center;padding:20px;font-size:14px;">No data yet!<br>Play some ranked games first.</div>';
   } else {
     rows.slice(0, 20).forEach((r, i) => {
       const div = document.createElement('div');
       div.className = 'lb-row' + (r.n === myNick ? ' me' : '');
-      div.innerHTML = `
-        <span class="lb-rank">${i === 0 ? '👑' : '#' + (i + 1)}</span>
-        <span class="lb-name" style="${r.n === myNick ? 'color:#00e5ff' : ''}">${r.n}</span>
-        <span class="lb-elo">${r.e}</span>`;
+      const rankStr = i === 0 ? '👑' : '#' + (i + 1);
+      div.innerHTML =
+        '<span class="lb-rank">' + rankStr + '</span>' +
+        '<span class="lb-name" style="' + (r.n === myNick ? 'color:#00e5ff' : '') + '">' + r.n + '</span>' +
+        '<span class="lb-elo">' + r.e + '</span>';
       el.appendChild(div);
     });
   }
   showScreen('lb-scr');
 };
-document.getElementById('btn-lb-back').onclick = () => openMenu();
 
 // ████████████████████████████████████████████████
 //   PAUSE SCREEN
@@ -519,13 +525,24 @@ async function hostRoom() {
     peer.on('connection', c => {
       netConn = c;
       document.getElementById('host-status').innerHTML =
-        '<span class="dot dot-ok"></span><span style="font-size:13px;color:#00ff88;">Connected! Starting game...</span>';
+        '<span class="dot dot-ok"></span><span style="font-size:13px;color:#00ff88;">Connected! Starting...</span>';
       c.on('open', () => {
-        c.send({ type: 'hello', nick: myNick });
-        setTimeout(() => startOnlineGame('left', null), 900);
+        // Host = LEFT, Guest = RIGHT
+        // Tell guest their side and host's nick
+        c.send({ type: 'start', hostNick: myNick });
+        // Host starts as left side
+        setTimeout(() => startOnlineGame('left', '...'), 500);
       });
-      c.on('data', d => activeGame && activeGame.netReceive(d));
-      c.on('close', () => { if (activeGame) { activeGame.destroy(); toast('Opponent disconnected'); openMenu(); } });
+      c.on('data', d => {
+        // Guest sends their nick in first message
+        if (d.type === 'joined') {
+          // Update opponent label
+          document.getElementById('lbl-r').textContent = (d.nick || 'OPP').slice(0,8).toUpperCase();
+          return;
+        }
+        activeGame && activeGame.netReceive(d);
+      });
+      c.on('close', () => { if (activeGame) { activeGame.destroy(); activeGame=null; toast('Opponent disconnected'); openMenu(); } });
     });
   } catch (e) {
     toast('Room error: ' + e);
@@ -534,26 +551,30 @@ async function hostRoom() {
 }
 
 async function joinRoom(code) {
-  toast('Connecting to ' + code + '...');
+  toast('Connecting...');
   try {
     cleanPeer();
     peer = await initPeer('p' + Date.now());
     netConn = peer.connect(code, { reliable: false, serialization: 'json' });
-    let gotHello = false;
     netConn.on('open', () => {
-      netConn.send({ type: 'hello', nick: myNick });
+      // Tell host our nick
+      netConn.send({ type: 'joined', nick: myNick });
     });
     netConn.on('data', d => {
-      if (d.type === 'hello' && !gotHello) {
-        gotHello = true;
-        startOnlineGame('right', d.nick);
+      if (d.type === 'start') {
+        // Host told us to start as right side
+        startOnlineGame('right', d.hostNick || 'HOST');
+        // Now route all future data to game
         netConn.on('data', dd => activeGame && activeGame.netReceive(dd));
-      } else if (gotHello) {
-        activeGame && activeGame.netReceive(d);
+        return;
       }
+      activeGame && activeGame.netReceive(d);
     });
-    netConn.on('close', () => { if (activeGame) { activeGame.destroy(); toast('Opponent disconnected'); openMenu(); } });
-    netConn.on('error', err => toast('Connection error: ' + err));
+    netConn.on('close', () => { if (activeGame) { activeGame.destroy(); activeGame=null; toast('Opponent disconnected'); openMenu(); } });
+    netConn.on('error', err => toast('Connection error'));
+    setTimeout(() => {
+      if (!activeGame) toast('Could not connect — check the code');
+    }, 12000);
   } catch (e) {
     toast('Error: ' + e);
   }
@@ -563,10 +584,16 @@ function startOnlineGame(mySide, opNick) {
   lastMode = 'online';
   const badge = document.getElementById('mode-badge');
   badge.textContent = 'ONLINE'; badge.className = 'mode-badge online';
-  const leftNick  = mySide === 'left'  ? myNick : (opNick || 'OPP');
-  const rightNick = mySide === 'right' ? myNick : (opNick || 'OPP');
-  document.getElementById('lbl-l').textContent = leftNick.slice(0, 8).toUpperCase();
-  document.getElementById('lbl-r').textContent = rightNick.slice(0, 8).toUpperCase();
+  // Left side label = host, Right side label = guest
+  if (mySide === 'left') {
+    document.getElementById('lbl-l').textContent = (myNick || 'YOU').slice(0,8).toUpperCase();
+    document.getElementById('lbl-r').textContent = (opNick || 'OPP').slice(0,8).toUpperCase();
+  } else {
+    document.getElementById('lbl-l').textContent = (opNick || 'HOST').slice(0,8).toUpperCase();
+    document.getElementById('lbl-r').textContent = (myNick || 'YOU').slice(0,8).toUpperCase();
+  }
+  document.getElementById('sc-l').textContent = '0';
+  document.getElementById('sc-r').textContent = '0';
   showScreen('game-scr');
   if (activeGame) activeGame.destroy();
   activeGame = new AirHockey({ mode: 'online', mySide, ranked: false });
@@ -653,11 +680,10 @@ class AirHockey {
     this.buildIceTexture();
   }
 
-  // ── RESIZE: fill canvas-wrap completely ──────────────
+  // ── RESIZE: use full window minus header ──────────────
   resize() {
-    const wrap = document.getElementById('canvas-wrap');
-    const W = wrap.clientWidth;
-    const H = wrap.clientHeight;
+    const W = window.innerWidth;
+    const H = window.innerHeight - 52; // 52px header
     this.W = W; this.H = H;
     this.canvas.width  = W;
     this.canvas.height = H;
@@ -828,8 +854,9 @@ class AirHockey {
     if (this.opts.mode === 'bot') {
       this.updateBot(dt);
     } else {
-      this.moveMallet(this.mR, dt);
-      // Send our mallet pos to peer
+      // Online: move opponent mallet toward received target position
+      this.moveMallet(this.playerSide === 'left' ? this.mR : this.mL, dt);
+      // Send OUR mallet position to opponent every frame
       if (netConn && netConn.open) {
         netConn.send({ type: 'mallet', x: this.playerMallet.x, y: this.playerMallet.y });
       }
@@ -1040,11 +1067,15 @@ class AirHockey {
     if (this.resetting) return;
     if (scorer === 'L') this.scoreL++; else this.scoreR++;
 
-    // Update header
-    const myS = this.playerSide === 'left' ? this.scoreL : this.scoreR;
-    const opS = this.playerSide === 'left' ? this.scoreR : this.scoreL;
-    document.getElementById('sc-l').textContent = myS;
-    document.getElementById('sc-r').textContent = opS;
+    // Update header — sc-l always shows LEFT player, sc-r shows RIGHT player
+    // But we show MY score on left col and OPP on right col in header
+    if (this.playerSide === 'left') {
+      document.getElementById('sc-l').textContent = this.scoreL;
+      document.getElementById('sc-r').textContent = this.scoreR;
+    } else {
+      document.getElementById('sc-l').textContent = this.scoreR; // my score (I'm right)
+      document.getElementById('sc-r').textContent = this.scoreL; // opp score
+    }
 
     // Notify peer
     if (this.opts.mode === 'online' && netConn && netConn.open) {
@@ -1070,19 +1101,31 @@ class AirHockey {
   netReceive(d) {
     if (!d) return;
     if (d.type === 'mallet') {
+      // Always update the OPPONENT's mallet (the one we don't control)
       const opp = this.playerSide === 'left' ? this.mR : this.mL;
       opp.tx = d.x; opp.ty = d.y;
     }
-    if (d.type === 'puck' && this.opts.mySide === 'right') {
-      this.puck.x = d.x; this.puck.y = d.y;
-      this.puck.vx = d.vx; this.puck.vy = d.vy;
+    if (d.type === 'puck') {
+      // Only the guest (right) receives puck from host (left)
+      if (this.opts.mySide === 'right') {
+        this.puck.x = d.x; this.puck.y = d.y;
+        this.puck.vx = d.vx; this.puck.vy = d.vy;
+      }
     }
     if (d.type === 'goal') {
       this.scoreL = d.sl; this.scoreR = d.sr;
-      const myS = this.playerSide === 'left' ? d.sl : d.sr;
-      const opS = this.playerSide === 'left' ? d.sr : d.sl;
-      document.getElementById('sc-l').textContent = myS;
-      document.getElementById('sc-r').textContent = opS;
+      // sc-l always = left player score, sc-r = right player score
+      // But header shows MY score on left, opponent on right
+      if (this.playerSide === 'left') {
+        document.getElementById('sc-l').textContent = d.sl;
+        document.getElementById('sc-r').textContent = d.sr;
+      } else {
+        document.getElementById('sc-l').textContent = d.sr; // my score (right side)
+        document.getElementById('sc-r').textContent = d.sl; // opp score (left side)
+      }
+    }
+    if (d.type === 'joined') {
+      document.getElementById('lbl-r').textContent = (d.nick || 'OPP').slice(0,8).toUpperCase();
     }
   }
 
@@ -1359,8 +1402,9 @@ window.addEventListener('resize', () => {
   for (const m of [activeGame.mL, activeGame.mR]) {
     m.x *= sx; m.y *= sy; m.tx *= sx; m.ty *= sy;
   }
-  activeGame.goalY1 = (activeGame.H - activeGame.H * 0.38) / 2;
-  activeGame.goalY2 = activeGame.goalY1 + activeGame.H * 0.38;
+  activeGame.goalH  = activeGame.H * 0.38;
+  activeGame.goalY1 = (activeGame.H - activeGame.goalH) / 2;
+  activeGame.goalY2 = activeGame.goalY1 + activeGame.goalH;
   activeGame.buildIceTexture();
 });
 
