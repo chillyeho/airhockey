@@ -2,1103 +2,1390 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Air Hockey Arena</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{
-  --c:#00e5ff;--p:#ff3d6e;--y:#ffe04b;--g:#00ff88;
-  --bg:#07111f;--panel:#0c1a2e;--card:#0f2040;--border:#162d4a;
-  --dim:#3a5872;--mid:#6a9ab8;--bright:#b8d8f0;
+/* ===== RESET & BASE ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+html,body{width:100%;height:100%;overflow:hidden;background:#060e1c;color:#c0d8f0;font-family:'Segoe UI',Arial,sans-serif;}
+
+/* ===== SCREENS ===== */
+.scr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;background:#060e1c;}
+.scr.off{display:none;}
+
+/* ===== MENU PANEL ===== */
+.panel{
+  background:#0b1828;
+  border:1px solid #1c3050;
+  border-radius:10px;
+  padding:28px 32px;
+  width:min(430px,95vw);
+  max-height:95vh;
+  overflow-y:auto;
+  position:relative;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--bright);font-family:'Segoe UI',system-ui,sans-serif;}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,.012) 3px,rgba(0,229,255,.012) 4px);pointer-events:none;z-index:999;}
+.panel::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);border-radius:10px 10px 0 0;}
 
-/* ── screens ── */
-.scr{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;transition:opacity .3s;}
-.scr.hide{opacity:0;pointer-events:none;}
+/* ===== TYPOGRAPHY ===== */
+.title{font-size:clamp(22px,5vw,32px);font-weight:900;color:#00e5ff;text-align:center;letter-spacing:4px;margin-bottom:2px;}
+.subtitle{font-size:10px;letter-spacing:6px;color:#2a5070;text-align:center;margin-bottom:24px;}
+.section{font-size:9px;letter-spacing:4px;color:#2a5070;padding-bottom:6px;border-bottom:1px solid #1c3050;margin:14px 0 10px;}
+.lbl{font-size:10px;letter-spacing:2px;color:#2a5070;margin-bottom:6px;}
+hr.div{border:none;border-top:1px solid #1c3050;margin:14px 0;}
 
-/* ── panel ── */
-.box{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:28px 32px;width:min(440px,96vw);position:relative;overflow:hidden;}
-.box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);}
+/* ===== PLAYER BAR ===== */
+.pbar{display:flex;justify-content:space-between;align-items:center;background:#070f1c;border:1px solid #1c3050;border-radius:6px;padding:10px 14px;margin-bottom:18px;}
+.pbar-name{font-size:16px;font-weight:700;color:#00e5ff;}
+.pbar-elo{font-size:13px;color:#5a88a8;}
+.pbar-elo b{color:#ffe04b;font-size:18px;}
 
-/* ── typography ── */
-.ttl{font-size:clamp(20px,5vw,30px);font-weight:800;letter-spacing:3px;color:var(--c);text-align:center;margin-bottom:4px;font-variant:small-caps;}
-.sub{font-size:11px;letter-spacing:5px;color:var(--dim);text-align:center;margin-bottom:24px;}
-.lbl{font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:6px;text-transform:uppercase;}
+/* ===== INPUTS ===== */
+input[type=text]{
+  width:100%;background:#070f1c;border:1px solid #1c3050;border-radius:5px;
+  padding:12px 14px;color:#c0d8f0;font-size:17px;outline:none;transition:border .2s;
+}
+input[type=text]:focus{border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,.1);}
 
-/* ── inputs ── */
-input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:11px 14px;color:var(--bright);font-size:17px;outline:none;transition:border .2s;}
-input[type=text]:focus{border-color:var(--c);}
-
-/* ── buttons ── */
-.btn{display:block;width:100%;padding:12px;border:1px solid;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .15s;text-align:center;text-transform:uppercase;background:transparent;margin-top:8px;}
+/* ===== BUTTONS ===== */
+.btn{
+  display:block;width:100%;padding:13px 16px;border:1px solid;border-radius:5px;
+  font-size:12px;font-weight:800;letter-spacing:2px;cursor:pointer;
+  transition:all .15s;text-align:center;text-transform:uppercase;
+  background:transparent;margin-top:8px;
+}
+.btn:hover{transform:translateY(-1px);}
 .btn:active{transform:scale(.97);}
-.bc{border-color:var(--c);color:var(--c);}  .bc:hover{background:rgba(0,229,255,.12);box-shadow:0 0 18px rgba(0,229,255,.3);}
-.bp{border-color:var(--p);color:var(--p);}  .bp:hover{background:rgba(255,61,110,.12);box-shadow:0 0 18px rgba(255,61,110,.3);}
-.by{border-color:var(--y);color:var(--y);}  .by:hover{background:rgba(255,224,75,.12);box-shadow:0 0 18px rgba(255,224,75,.3);}
-.bg2{border-color:var(--border);color:var(--dim);} .bg2:hover{border-color:var(--mid);color:var(--bright);}
-.bsm{border-color:var(--g);color:var(--g);} .bsm:hover{background:rgba(0,255,136,.1);}
+.btn-c{border-color:#00e5ff;color:#00e5ff;} .btn-c:hover{background:rgba(0,229,255,.1);box-shadow:0 0 16px rgba(0,229,255,.2);}
+.btn-r{border-color:#ff3d6e;color:#ff3d6e;} .btn-r:hover{background:rgba(255,61,110,.1);box-shadow:0 0 16px rgba(255,61,110,.2);}
+.btn-y{border-color:#ffe04b;color:#ffe04b;} .btn-y:hover{background:rgba(255,224,75,.1);}
+.btn-g{border-color:#00ff88;color:#00ff88;} .btn-g:hover{background:rgba(0,255,136,.1);}
+.btn-dim{border-color:#1c3050;color:#2a5070;} .btn-dim:hover{border-color:#3a6090;color:#7aabb8;}
 
-/* ── diff buttons ── */
-.dg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin:8px 0 14px;}
-.db{padding:9px 4px;border:1px solid var(--border);border-radius:3px;background:var(--bg);color:var(--dim);font-size:10px;letter-spacing:1px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;}
-.db:hover{border-color:var(--mid);}
-.de{border-color:var(--g)!important;color:var(--g)!important;background:rgba(0,255,136,.08)!important;}
-.dm{border-color:var(--y)!important;color:var(--y)!important;background:rgba(255,224,75,.08)!important;}
-.dh{border-color:var(--p)!important;color:var(--p)!important;background:rgba(255,61,110,.08)!important;}
+/* ===== DIFFICULTY BUTTONS ===== */
+.diff-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 14px;}
+.diff-btn{
+  padding:10px 4px;border:1px solid #1c3050;border-radius:4px;
+  background:#070f1c;color:#2a5070;font-size:10px;letter-spacing:1px;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.diff-btn.d-easy{border-color:#00ff88;color:#00ff88;background:rgba(0,255,136,.08);}
+.diff-btn.d-med {border-color:#ffe04b;color:#ffe04b;background:rgba(255,224,75,.08);}
+.diff-btn.d-hard{border-color:#ff3d6e;color:#ff3d6e;background:rgba(255,61,110,.08);}
 
-/* ── pbar ── */
-#pbar{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin-bottom:20px;}
-.pn{font-size:15px;font-weight:700;color:var(--c);}
-.pe{font-size:13px;color:var(--mid);}
-.pe b{color:var(--y);font-size:17px;}
+/* ===== LEADERBOARD ===== */
+.lb-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#070f1c;border:1px solid #1c3050;border-radius:5px;margin-bottom:5px;}
+.lb-row.me{border-color:#00e5ff;}
+.lb-rank{font-size:12px;color:#2a5070;min-width:24px;text-align:right;}
+.lb-name{flex:1;font-size:14px;font-weight:600;}
+.lb-elo{font-size:15px;font-weight:700;color:#ffe04b;}
 
-.sec{font-size:10px;letter-spacing:3px;color:var(--dim);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:10px;}
-.div{height:1px;background:var(--border);margin:16px 0;}
+/* ===== ROOM CODE ===== */
+.room-code{
+  font-size:28px;font-weight:900;letter-spacing:8px;color:#ffe04b;
+  text-align:center;padding:16px;background:#070f1c;
+  border:1px solid #1c3050;border-radius:6px;margin:12px 0;
+}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle;}
+.dot-wait{background:#ffe04b;animation:blink .7s infinite alternate;}
+.dot-ok{background:#00ff88;}
+@keyframes blink{from{opacity:.3}to{opacity:1}}
 
-/* ── game screen ── */
-#gscr{flex-direction:column;background:var(--bg);z-index:5;padding:0;}
-#ghdr{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;}
-.sb{text-align:center;min-width:50px;}
-.sl{font-size:9px;letter-spacing:3px;color:var(--dim);}
-.sn{font-size:28px;font-weight:900;line-height:1.1;}
-.snc{color:var(--c);} .snp{color:var(--p);}
-#timer{font-size:20px;font-weight:800;color:var(--y);letter-spacing:2px;min-width:60px;text-align:center;}
-.badge{font-size:9px;letter-spacing:2px;padding:3px 9px;border:1px solid var(--border);border-radius:2px;color:var(--dim);}
-.badge.rk{border-color:var(--y);color:var(--y);}
-#cwrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
-#gc{display:block;touch-action:none;}
+/* ===== GAME SCREEN ===== */
+#game-scr{
+  background:#060e1c;
+  flex-direction:column;
+  padding:0;
+  z-index:5;
+}
+/* Header */
+#hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px;
+  background:#0a1624;
+  border-bottom:1px solid #1c3050;
+  flex-shrink:0;
+  gap:8px;
+}
+.score-block{text-align:center;min-width:50px;}
+.score-label{font-size:9px;letter-spacing:2px;color:#2a5070;}
+.score-num{font-size:30px;font-weight:900;line-height:1;}
+.score-num.blue{color:#00e5ff;} .score-num.red{color:#ff3d6e;}
+#tmr{font-size:22px;font-weight:900;color:#ffe04b;letter-spacing:3px;min-width:60px;text-align:center;}
+.mode-badge{font-size:9px;letter-spacing:2px;padding:2px 8px;border:1px solid #1c3050;border-radius:2px;color:#2a5070;margin-top:3px;display:inline-block;}
+.mode-badge.ranked{border-color:#ffe04b;color:#ffe04b;}
+.mode-badge.online{border-color:#00ff88;color:#00ff88;}
+#pause-btn{
+  background:transparent;border:1px solid #1c3050;border-radius:4px;
+  color:#2a5070;font-size:15px;padding:5px 10px;cursor:pointer;flex-shrink:0;transition:all .15s;
+}
+#pause-btn:hover{border-color:#00e5ff;color:#00e5ff;}
 
-/* ── pause ── */
-#pov{position:fixed;inset:0;background:rgba(7,17,31,.9);display:flex;align-items:center;justify-content:center;z-index:50;}
-#pov.hide{opacity:0;pointer-events:none;}
+/* Canvas wrapper — fills all remaining height */
+#canvas-wrap{
+  flex:1;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#gc{
+  display:block;
+  touch-action:none;
+  cursor:none;
+}
 
-/* ── result ── */
-.rttl{font-size:30px;font-weight:900;text-align:center;margin-bottom:6px;letter-spacing:2px;}
-.rttl.win{color:var(--c);}  .rttl.lose{color:var(--p);}
-.rsc{font-size:44px;font-weight:900;text-align:center;margin-bottom:4px;}
-.rsc .c{color:var(--c);} .rsc .p{color:var(--p);}
-.ec{font-size:21px;font-weight:700;text-align:center;margin-bottom:22px;}
-.ec.pos{color:var(--g);} .ec.neg{color:var(--p);} .ec.neu{color:var(--dim);}
+/* ===== PAUSE OVERLAY ===== */
+#pause-scr{
+  position:fixed;inset:0;background:rgba(6,14,28,.9);
+  display:flex;align-items:center;justify-content:center;z-index:60;
+}
+#pause-scr.off{display:none;}
 
-/* ── leaderboard ── */
-#lbscr .box{max-height:90vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
-.lbrow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:4px;margin-bottom:4px;background:var(--bg);border:1px solid var(--border);}
-.lbrow.me{border-color:var(--c);}
-.lbrk{font-size:11px;color:var(--dim);min-width:22px;text-align:right;}
-.lbnn{flex:1;font-size:14px;font-weight:600;}
-.lbel{font-size:15px;font-weight:700;color:var(--y);}
-.crown{color:#ffd700;font-size:16px;}
+/* ===== RESULT ===== */
+.result-title{font-size:32px;font-weight:900;text-align:center;letter-spacing:3px;margin-bottom:6px;}
+.result-title.win{color:#00e5ff;} .result-title.lose{color:#ff3d6e;} .result-title.draw{color:#ffe04b;}
+.result-score{font-size:48px;font-weight:900;text-align:center;margin-bottom:4px;}
+.result-score .blue{color:#00e5ff;} .result-score .red{color:#ff3d6e;}
+.elo-diff{font-size:22px;font-weight:700;text-align:center;margin-bottom:24px;}
+.elo-diff.pos{color:#00ff88;} .elo-diff.neg{color:#ff3d6e;} .elo-diff.zero{color:#2a5070;}
 
-/* ── online ── */
-#room-code{font-size:24px;font-weight:800;letter-spacing:6px;color:var(--y);text-align:center;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:4px;margin:10px 0;}
-.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
-.dot-wait{background:var(--y);animation:pulse .8s infinite alternate;}
-.dot-ok{background:var(--g);}
-.dot-err{background:var(--p);}
-@keyframes pulse{from{opacity:.4;}to{opacity:1;}}
-
-/* ── toast ── */
-#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:4px;padding:10px 20px;font-size:13px;color:var(--bright);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#0b1828;border:1px solid #1c3050;border-radius:5px;
+  padding:10px 20px;font-size:13px;color:#c0d8f0;
+  z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;
+}
 #toast.show{opacity:1;}
-
-/* ── mobile touch hint ── */
-#touch-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--dim);pointer-events:none;letter-spacing:2px;}
 </style>
 </head>
 <body>
 
-<!-- ══ NICK ══════════════════════════════════════════ -->
-<div class="scr" id="nscr">
-<div class="box">
-  <div class="ttl">AIR HOCKEY</div>
-  <div class="sub">ARENA · ENTER CALLSIGN</div>
-  <div class="lbl">Nickname</div>
-  <input type="text" id="ni" maxlength="14" placeholder="CyberPilot_47" autocomplete="off">
-  <button class="btn bc" id="bnc" style="margin-top:14px">PLAY →</button>
-</div>
-</div>
-
-<!-- ══ MENU ══════════════════════════════════════════ -->
-<div class="scr hide" id="mscr">
-<div class="box">
-  <div class="ttl">AIR HOCKEY</div>
-  <div class="sub">ARENA</div>
-  <div id="pbar">
-    <div><div class="lbl" style="margin:0 0 2px">Pilot</div><div class="pn" id="mn">—</div></div>
-    <div style="text-align:right"><div class="lbl" style="margin:0 0 2px">Rating</div><div class="pe">ELO <b id="me">1000</b></div></div>
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: NICKNAME            ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr" id="nick-scr">
+  <div class="panel">
+    <div class="title">AIR HOCKEY</div>
+    <div class="subtitle">ARENA — ENTER YOUR NAME</div>
+    <div class="lbl">Your nickname</div>
+    <input type="text" id="nick-inp" maxlength="15" placeholder="Player1" autocomplete="off">
+    <button class="btn btn-c" id="nick-ok" style="margin-top:16px">ENTER ARENA →</button>
   </div>
-
-  <div class="sec">BOT DIFFICULTY</div>
-  <div class="dg" id="dg">
-    <div class="db de" data-d="easy">EASY</div>
-    <div class="db" data-d="med">MEDIUM</div>
-    <div class="db" data-d="hard">HARD</div>
-  </div>
-
-  <div class="sec">GAME MODE</div>
-  <button class="btn bc" id="bur">⬡ UNRANKED vs BOT</button>
-  <button class="btn bp" id="brk">◈ RANKED vs BOT</button>
-
-  <div class="div"></div>
-  <div class="sec">ONLINE (UNRANKED)</div>
-  <button class="btn bsm" id="bhost">CREATE ROOM</button>
-  <button class="btn by" id="bjoin">JOIN ROOM</button>
-
-  <div class="div"></div>
-  <button class="btn bg2" id="blb">🏆 LEADERBOARD</button>
-  <button class="btn bg2" id="brnk" style="margin-top:6px">CHANGE NICKNAME</button>
-</div>
 </div>
 
-<!-- ══ GAME ══════════════════════════════════════════ -->
-<div class="scr hide" id="gscr">
-  <div id="ghdr">
-    <div class="sb"><div class="sl" id="sl1">YOU</div><div class="sn snc" id="sp">0</div></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div id="timer">1:30</div>
-      <div class="badge" id="mbdg">UNRANKED</div>
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: MAIN MENU           ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="menu-scr">
+  <div class="panel">
+    <div class="title">AIR HOCKEY</div>
+    <div class="subtitle">ARENA</div>
+
+    <div class="pbar">
+      <div>
+        <div class="lbl" style="margin:0 0 2px">PLAYER</div>
+        <div class="pbar-name" id="m-nick">—</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lbl" style="margin:0 0 2px">RATING</div>
+        <div class="pbar-elo">ELO <b id="m-elo">1000</b></div>
+      </div>
     </div>
-    <div class="sb"><div class="sl" id="sl2">BOT</div><div class="sn snp" id="sb2">0</div></div>
+
+    <div class="section">BOT DIFFICULTY</div>
+    <div class="diff-row" id="diff-row">
+      <div class="diff-btn d-easy" data-d="easy">EASY</div>
+      <div class="diff-btn" data-d="med">MEDIUM</div>
+      <div class="diff-btn" data-d="hard">HARD</div>
+    </div>
+
+    <div class="section">PLAY vs BOT</div>
+    <button class="btn btn-c" id="btn-unranked">⬡ UNRANKED</button>
+    <button class="btn btn-r" id="btn-ranked">◈ RANKED</button>
+
+    <hr class="div">
+    <div class="section">ONLINE vs PLAYER (unranked)</div>
+    <button class="btn btn-g" id="btn-host">+ CREATE ROOM</button>
+    <button class="btn btn-y" id="btn-join">→ JOIN ROOM</button>
+
+    <hr class="div">
+    <button class="btn btn-c" id="btn-lb" style="font-size:11px;">🏆 LEADERBOARD</button>
+    <button class="btn btn-dim" id="btn-rename" style="margin-top:6px;font-size:10px;">CHANGE NICKNAME</button>
   </div>
-  <div id="cwrap">
+</div>
+
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: GAME                ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="game-scr">
+  <div id="hdr">
+    <div class="score-block">
+      <div class="score-label" id="lbl-l">YOU</div>
+      <div class="score-num blue" id="sc-l">0</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div id="tmr">1:30</div>
+      <div class="mode-badge" id="mode-badge">UNRANKED</div>
+    </div>
+    <div class="score-block">
+      <div class="score-label" id="lbl-r">BOT</div>
+      <div class="score-num red" id="sc-r">0</div>
+    </div>
+    <button id="pause-btn">⏸</button>
+  </div>
+  <div id="canvas-wrap">
     <canvas id="gc"></canvas>
-    <div id="touch-hint">DRAG YOUR PADDLE</div>
   </div>
 </div>
 
-<!-- ══ PAUSE ══════════════════════════════════════════ -->
-<div id="pov" class="hide">
-<div class="box" style="width:300px;text-align:center">
-  <div class="ttl" style="font-size:22px;margin-bottom:16px">PAUSED</div>
-  <button class="btn bc" id="bres">▶ RESUME</button>
-  <button class="btn bg2" id="bqp" style="margin-top:8px">QUIT TO MENU</button>
-</div>
-</div>
-
-<!-- ══ RESULT ══════════════════════════════════════════ -->
-<div class="scr hide" id="rscr">
-<div class="box">
-  <div class="rttl" id="rttl">VICTORY</div>
-  <div class="rsc"><span class="c" id="rps">0</span> : <span class="p" id="rbs">0</span></div>
-  <div class="ec" id="ecd">—</div>
-  <button class="btn bc" id="brm">↺ REMATCH</button>
-  <button class="btn bg2" id="brtm" style="margin-top:8px">← MENU</button>
-</div>
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: PAUSE               ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div id="pause-scr" class="off">
+  <div class="panel" style="width:300px;text-align:center;">
+    <div class="title" style="font-size:24px;margin-bottom:18px;">PAUSED</div>
+    <button class="btn btn-c" id="btn-resume">▶ RESUME</button>
+    <button class="btn btn-dim" id="btn-quit" style="margin-top:8px;">QUIT TO MENU</button>
+  </div>
 </div>
 
-<!-- ══ LEADERBOARD ══════════════════════════════════════ -->
-<div class="scr hide" id="lbscr">
-<div class="box">
-  <div class="ttl" style="font-size:22px">LEADERBOARD</div>
-  <div class="sub" style="margin-bottom:16px">TOP PLAYERS BY ELO</div>
-  <div id="lbl2"></div>
-  <button class="btn bg2" id="blbback" style="margin-top:14px">← BACK</button>
-</div>
-</div>
-
-<!-- ══ JOIN ROOM ══════════════════════════════════════ -->
-<div class="scr hide" id="jscr">
-<div class="box">
-  <div class="ttl" style="font-size:20px">JOIN ROOM</div>
-  <div class="sub" style="margin-bottom:16px">ENTER 4-DIGIT CODE</div>
-  <div class="lbl">Room Code</div>
-  <input type="text" id="ji" maxlength="6" placeholder="ABCD" autocomplete="off" style="text-align:center;letter-spacing:6px;font-size:22px;font-weight:700;">
-  <button class="btn bc" id="bjc" style="margin-top:12px">CONNECT →</button>
-  <button class="btn bg2" id="bjback" style="margin-top:8px">← BACK</button>
-</div>
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: RESULT              ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="result-scr">
+  <div class="panel" style="text-align:center;">
+    <div class="result-title" id="res-title">VICTORY</div>
+    <div class="result-score">
+      <span class="blue" id="res-sl">0</span>
+      <span style="color:#2a5070;font-size:36px;"> : </span>
+      <span class="red" id="res-sr">0</span>
+    </div>
+    <div class="elo-diff" id="res-elo">—</div>
+    <button class="btn btn-c" id="btn-rematch">↺ REMATCH</button>
+    <button class="btn btn-dim" id="btn-to-menu" style="margin-top:8px;">← MENU</button>
+  </div>
 </div>
 
-<!-- ══ HOST WAIT ══════════════════════════════════════ -->
-<div class="scr hide" id="hscr">
-<div class="box" style="text-align:center">
-  <div class="ttl" style="font-size:20px">WAITING FOR OPPONENT</div>
-  <div id="room-code">----</div>
-  <div style="font-size:12px;color:var(--dim);margin-bottom:16px;letter-spacing:1px">Share this code with your friend</div>
-  <div id="conn-status"><span class="status-dot dot-wait"></span><span style="font-size:13px;color:var(--mid)">Waiting...</span></div>
-  <button class="btn bg2" id="bhback" style="margin-top:16px">CANCEL</button>
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: LEADERBOARD         ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="lb-scr">
+  <div class="panel" style="max-height:92vh;overflow-y:auto;">
+    <div class="title" style="font-size:22px;">LEADERBOARD</div>
+    <div class="subtitle" style="margin-bottom:14px;">TOP 20 BY ELO</div>
+    <div id="lb-list"></div>
+    <button class="btn btn-dim" id="btn-lb-back" style="margin-top:14px;">← BACK</button>
+  </div>
 </div>
+
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: JOIN ROOM           ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="join-scr">
+  <div class="panel">
+    <div class="title" style="font-size:22px;">JOIN ROOM</div>
+    <div class="subtitle" style="margin-bottom:16px;">ENTER ROOM CODE</div>
+    <input type="text" id="join-inp" maxlength="7" placeholder="AH1234"
+      style="text-align:center;letter-spacing:6px;font-size:24px;font-weight:800;">
+    <button class="btn btn-y" id="btn-join-go" style="margin-top:14px;">CONNECT →</button>
+    <button class="btn btn-dim" id="btn-join-back" style="margin-top:8px;">← BACK</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════╗ -->
+<!-- ║  SCREEN: HOST WAITING        ║ -->
+<!-- ╚══════════════════════════════╝ -->
+<div class="scr off" id="host-scr">
+  <div class="panel" style="text-align:center;">
+    <div class="title" style="font-size:20px;">WAITING FOR PLAYER</div>
+    <div class="room-code" id="room-code">——</div>
+    <div style="font-size:11px;color:#2a5070;margin-bottom:16px;letter-spacing:1px;">
+      Send this code to your friend
+    </div>
+    <div id="host-status">
+      <span class="dot dot-wait"></span>
+      <span style="font-size:13px;color:#5a88a8;">Waiting for connection...</span>
+    </div>
+    <button class="btn btn-dim" id="btn-host-cancel" style="margin-top:18px;">CANCEL</button>
+  </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-// ════════════════════════════════════════════════════
-//  AIR HOCKEY ARENA — full rewrite
-//  Horizontal field, mobile touch, smart bots,
-//  1:30 timer, 5 goals, ELO leaderboard, online P2P
-// ════════════════════════════════════════════════════
+"use strict";
 
-// ── Storage ──────────────────────────────────────────
-const S = {
-  g:(k,d)=>{ try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch{return d;} },
-  s:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v));}catch{} }
+// ████████████████████████████████████████████████
+//   STORAGE
+// ████████████████████████████████████████████████
+const LS = {
+  get(k, d) {
+    try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }
+    catch { return d; }
+  },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
 
-// ── Player state ─────────────────────────────────────
-let nick = S.g('nick',null);
-let elo  = S.g('elo',1000);
+// ████████████████████████████████████████████████
+//   PLAYER STATE
+// ████████████████████████████████████████████████
+let myNick = LS.get('nick', null);
+let myElo  = LS.get('elo', 1000);
 
-// ── ELO leaderboard (stored locally, simulates global) ──
-function lbGet(){ return S.g('lb',[]); }
-function lbSave(rows){ S.s('lb',rows); }
-function lbUpdate(n,e){
-  let rows=lbGet();
-  const idx=rows.findIndex(r=>r.n===n);
-  if(idx>=0) rows[idx].e=e;
-  else rows.push({n,e});
-  rows.sort((a,b)=>b.e-a.e);
-  if(rows.length>50) rows=rows.slice(0,50);
-  lbSave(rows);
+// ELO config per difficulty
+const ELO_CFG = {
+  easy: { win: 8,  lose: 22 },
+  med:  { win: 16, lose: 14 },
+  hard: { win: 30, lose: 6  }
+};
+const ABANDON_PENALTY = 25;
+
+// ████████████████████████████████████████████████
+//   LEADERBOARD
+// ████████████████████████████████████████████████
+function lbGet() { return LS.get('lb', []); }
+function lbPush(nick, elo) {
+  let rows = lbGet();
+  const i = rows.findIndex(r => r.n === nick);
+  if (i >= 0) rows[i].e = elo; else rows.push({ n: nick, e: elo });
+  rows.sort((a, b) => b.e - a.e);
+  if (rows.length > 50) rows = rows.slice(0, 50);
+  LS.set('lb', rows);
 }
 
-// ── ELO config ───────────────────────────────────────
-const ELO={easy:{w:8,l:22},med:{w:16,l:14},hard:{w:30,l:6}};
-const ABANDON_ELO=25; // ranked quit penalty
+// ████████████████████████████████████████████████
+//   SCREEN MANAGEMENT
+// ████████████████████████████████████████████████
+const SCREENS = ['nick-scr','menu-scr','game-scr','result-scr','lb-scr','join-scr','host-scr'];
 
-// ── UI helpers ────────────────────────────────────────
-const $=id=>document.getElementById(id);
-const scrs={nick:'nscr',menu:'mscr',game:'gscr',result:'rscr',lb:'lbscr',join:'jscr',host:'hscr'};
-function show(name){
-  Object.values(scrs).forEach(id=>{
-    const el=$(id);
-    if(el) el.classList.toggle('hide',id!==scrs[name]);
+function showScreen(id) {
+  SCREENS.forEach(s => {
+    const el = document.getElementById(s);
+    if (!el) return;
+    if (s === id) el.classList.remove('off');
+    else el.classList.add('off');
   });
 }
 
-function toast(msg,dur=2500){
-  const t=$('toast'); t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),dur);
+function toast(msg, ms = 2800) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), ms);
 }
 
-// ── Nick screen ───────────────────────────────────────
-$('bnc').onclick=()=>{
-  const v=$('ni').value.trim();
-  if(!v)return $('ni').focus();
-  nick=v; S.s('nick',nick);
-  lbUpdate(nick,elo);
+// ████████████████████████████████████████████████
+//   NICK SCREEN
+// ████████████████████████████████████████████████
+document.getElementById('nick-ok').onclick = () => {
+  const v = document.getElementById('nick-inp').value.trim();
+  if (!v) { document.getElementById('nick-inp').focus(); return; }
+  myNick = v;
+  LS.set('nick', myNick);
+  lbPush(myNick, myElo);
   openMenu();
 };
-$('ni').onkeydown=e=>e.key==='Enter'&&$('bnc').click();
+document.getElementById('nick-inp').onkeydown = e => {
+  if (e.key === 'Enter') document.getElementById('nick-ok').click();
+};
 
-function boot(){ nick?openMenu():show('nick'); }
+// ████████████████████████████████████████████████
+//   MENU SCREEN
+// ████████████████████████████████████████████████
+let selDiff = 'easy';
 
-// ── Menu ──────────────────────────────────────────────
-let selDiff='easy';
-
-function openMenu(){
-  $('mn').textContent=nick;
-  $('me').textContent=elo;
-  updateDiff();
-  show('menu');
+function openMenu() {
+  document.getElementById('m-nick').textContent = myNick;
+  document.getElementById('m-elo').textContent = myElo;
+  updateDiffBtns();
+  showScreen('menu-scr');
 }
 
-$('dg').querySelectorAll('.db').forEach(b=>{
-  b.onclick=()=>{ selDiff=b.dataset.d; updateDiff(); };
+function updateDiffBtns() {
+  document.getElementById('diff-row').querySelectorAll('.diff-btn').forEach(b => {
+    b.className = 'diff-btn';
+    if (b.dataset.d === selDiff) {
+      b.classList.add(selDiff === 'easy' ? 'd-easy' : selDiff === 'med' ? 'd-med' : 'd-hard');
+    }
+  });
+}
+
+document.getElementById('diff-row').querySelectorAll('.diff-btn').forEach(b => {
+  b.onclick = () => { selDiff = b.dataset.d; updateDiffBtns(); };
 });
 
-function updateDiff(){
-  $('dg').querySelectorAll('.db').forEach(b=>{
-    b.className='db';
-    if(b.dataset.d===selDiff) b.classList.add(selDiff==='easy'?'de':selDiff==='med'?'dm':'dh');
-  });
-}
+let isRanked = false;
+document.getElementById('btn-unranked').onclick = () => { isRanked = false; startBotGame(); };
+document.getElementById('btn-ranked').onclick   = () => { isRanked = true;  startBotGame(); };
+document.getElementById('btn-rename').onclick   = () => { myNick = null; LS.set('nick', null); showScreen('nick-scr'); };
 
-let isRanked=false;
-$('bur').onclick=()=>{ isRanked=false; launchGame('bot'); };
-$('brk').onclick=()=>{ isRanked=true;  launchGame('bot'); };
-$('brnk').onclick=()=>{ nick=null; S.s('nick',null); show('nick'); };
-
-// ── Leaderboard ───────────────────────────────────────
-$('blb').onclick=()=>{ renderLB(); show('lb'); };
-$('blbback').onclick=()=>openMenu();
-
-function renderLB(){
-  lbUpdate(nick,elo);
-  const rows=lbGet();
-  const el=$('lbl2'); el.innerHTML='';
-  if(!rows.length){el.innerHTML='<div style="color:var(--dim);text-align:center;padding:16px">No data yet</div>';return;}
-  rows.slice(0,20).forEach((r,i)=>{
-    const me=r.n===nick;
-    const div=document.createElement('div');
-    div.className='lbrow'+(me?' me':'');
-    div.innerHTML=`<span class="lbrk">${i===0?'<span class="crown">👑</span>':`#${i+1}`}</span>
-      <span class="lbnn" style="${me?'color:var(--c)':''}"> ${r.n}</span>
-      <span class="lbel">${r.e}</span>`;
-    el.appendChild(div);
-  });
-}
-
-// ── Result screen ─────────────────────────────────────
-$('brm').onclick=()=>{ if(lastGameMode==='bot') launchGame('bot'); else openMenu(); };
-$('brtm').onclick=()=>openMenu();
-
-// ── Pause ──────────────────────────────────────────────
-$('bres').onclick=()=>game&&game.resume();
-$('bqp').onclick=()=>{
-  if(game){
-    if(isRanked&&game.running){
-      elo=Math.max(0,elo-ABANDON_ELO);
-      S.s('elo',elo);
-      lbUpdate(nick,elo);
-      toast(`Ranked abandon: -${ABANDON_ELO} ELO`);
-    }
-    game.destroy();
+// Leaderboard
+document.getElementById('btn-lb').onclick = () => {
+  lbPush(myNick, myElo);
+  const rows = lbGet();
+  const el = document.getElementById('lb-list');
+  el.innerHTML = '';
+  if (!rows.length) {
+    el.innerHTML = '<div style="color:#2a5070;text-align:center;padding:16px;">No data yet — play some games!</div>';
+  } else {
+    rows.slice(0, 20).forEach((r, i) => {
+      const div = document.createElement('div');
+      div.className = 'lb-row' + (r.n === myNick ? ' me' : '');
+      div.innerHTML = `
+        <span class="lb-rank">${i === 0 ? '👑' : '#' + (i + 1)}</span>
+        <span class="lb-name" style="${r.n === myNick ? 'color:#00e5ff' : ''}">${r.n}</span>
+        <span class="lb-elo">${r.e}</span>`;
+      el.appendChild(div);
+    });
   }
-  $('pov').classList.add('hide');
+  showScreen('lb-scr');
+};
+document.getElementById('btn-lb-back').onclick = () => openMenu();
+
+// ████████████████████████████████████████████████
+//   PAUSE SCREEN
+// ████████████████████████████████████████████████
+document.getElementById('pause-btn').onclick = () => activeGame && activeGame.togglePause();
+document.getElementById('btn-resume').onclick = () => activeGame && activeGame.resume();
+document.getElementById('btn-quit').onclick = () => {
+  if (activeGame) {
+    if (isRanked && activeGame.running && activeGame.opts.mode === 'bot') {
+      myElo = Math.max(0, myElo - ABANDON_PENALTY);
+      LS.set('elo', myElo);
+      lbPush(myNick, myElo);
+      toast('Abandoned ranked match: -' + ABANDON_PENALTY + ' ELO');
+    }
+    activeGame.destroy();
+    activeGame = null;
+  }
+  document.getElementById('pause-scr').classList.add('off');
   openMenu();
 };
-document.onkeydown=e=>e.key==='Escape'&&game&&game.togglePause();
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && activeGame) activeGame.togglePause();
+});
 
-// ── Online (PeerJS) ───────────────────────────────────
-let peer=null, conn=null, onlineGame=null;
-let lastGameMode='bot';
+// Result
+document.getElementById('btn-rematch').onclick = () => {
+  if (lastMode === 'bot') startBotGame();
+  else openMenu();
+};
+document.getElementById('btn-to-menu').onclick = () => openMenu();
 
-$('bhost').onclick=hostRoom;
-$('bjoin').onclick=()=>show('join');
-$('bjc').onclick=()=>{
-  const code=$('ji').value.trim().toUpperCase();
-  if(code.length<4){toast('Enter valid code');return;}
+// ████████████████████████████████████████████████
+//   ONLINE (PeerJS)
+// ████████████████████████████████████████████████
+let peer = null, netConn = null;
+let lastMode = 'bot';
+
+document.getElementById('btn-host').onclick = hostRoom;
+document.getElementById('btn-join').onclick = () => showScreen('join-scr');
+document.getElementById('btn-join-go').onclick = () => {
+  const code = document.getElementById('join-inp').value.trim().toUpperCase();
+  if (code.length < 4) { toast('Enter valid room code'); return; }
   joinRoom(code);
 };
-$('bjback').onclick=()=>openMenu();
-$('bhback').onclick=()=>{ cleanPeer(); openMenu(); };
+document.getElementById('btn-join-back').onclick = () => openMenu();
+document.getElementById('btn-host-cancel').onclick = () => { cleanPeer(); openMenu(); };
 
-function genCode(){ return Math.random().toString(36).slice(2,6).toUpperCase(); }
+function cleanPeer() {
+  if (netConn) { try { netConn.close(); } catch {} netConn = null; }
+  if (peer) { try { peer.destroy(); } catch {} peer = null; }
+}
 
-function initPeer(id){
-  return new Promise((res,rej)=>{
-    if(typeof Peer==='undefined'){rej('PeerJS not loaded');return;}
-    const p=new Peer(id,{debug:0});
-    p.on('open',()=>res(p));
-    p.on('error',e=>rej(e.message||e));
-    setTimeout(()=>rej('timeout'),8000);
+function mkCode() { return 'AH' + Math.random().toString(36).slice(2, 6).toUpperCase(); }
+
+function initPeer(id) {
+  return new Promise((resolve, reject) => {
+    if (typeof Peer === 'undefined') { reject('PeerJS not loaded'); return; }
+    const p = new Peer(id, { debug: 0 });
+    p.on('open', () => resolve(p));
+    p.on('error', err => reject(err.type || err.message || 'peer error'));
+    setTimeout(() => reject('Connection timeout (10s)'), 10000);
   });
 }
 
-function cleanPeer(){
-  if(conn){try{conn.close();}catch{}}
-  if(peer){try{peer.destroy();}catch{}}
-  conn=null; peer=null;
-}
-
-async function hostRoom(){
-  const code='AH'+genCode();
-  $('room-code').textContent=code;
-  $('conn-status').innerHTML='<span class="status-dot dot-wait"></span><span style="font-size:13px;color:var(--mid)">Waiting...</span>';
-  show('host');
-  try{
-    peer=await initPeer(code);
-    peer.on('connection',c=>{
-      conn=c;
-      $('conn-status').innerHTML='<span class="status-dot dot-ok"></span><span style="font-size:13px;color:var(--g)">Connected! Starting...</span>';
-      conn.on('open',()=>{
-        conn.send({type:'start',side:'right',opNick:nick});
-        setTimeout(()=>{ show('game'); launchOnline('left'); },800);
+async function hostRoom() {
+  const code = mkCode();
+  document.getElementById('room-code').textContent = code;
+  document.getElementById('host-status').innerHTML =
+    '<span class="dot dot-wait"></span><span style="font-size:13px;color:#5a88a8;">Waiting...</span>';
+  showScreen('host-scr');
+  try {
+    peer = await initPeer(code);
+    peer.on('connection', c => {
+      netConn = c;
+      document.getElementById('host-status').innerHTML =
+        '<span class="dot dot-ok"></span><span style="font-size:13px;color:#00ff88;">Connected! Starting game...</span>';
+      c.on('open', () => {
+        c.send({ type: 'hello', nick: myNick });
+        setTimeout(() => startOnlineGame('left', null), 900);
       });
-      conn.on('data',d=>game&&game.onNetData(d));
-      conn.on('close',()=>game&&game.onNetClose());
+      c.on('data', d => activeGame && activeGame.netReceive(d));
+      c.on('close', () => { if (activeGame) { activeGame.destroy(); toast('Opponent disconnected'); openMenu(); } });
     });
-  }catch(e){ toast('P2P error: '+e); show('menu'); }
+  } catch (e) {
+    toast('Room error: ' + e);
+    openMenu();
+  }
 }
 
-async function joinRoom(code){
-  toast('Connecting...');
-  try{
-    peer=await initPeer('player-'+Date.now());
-    conn=peer.connect(code,{reliable:false,serialization:'json'});
-    conn.on('open',()=>{});
-    conn.on('data',d=>{
-      if(d.type==='start'){
-        show('game');
-        launchOnline('right',d.opNick);
-        conn.on('data',dd=>game&&game.onNetData(dd));
-        conn.on('close',()=>game&&game.onNetClose());
-      } else {
-        game&&game.onNetData(d);
+async function joinRoom(code) {
+  toast('Connecting to ' + code + '...');
+  try {
+    cleanPeer();
+    peer = await initPeer('p' + Date.now());
+    netConn = peer.connect(code, { reliable: false, serialization: 'json' });
+    let gotHello = false;
+    netConn.on('open', () => {
+      netConn.send({ type: 'hello', nick: myNick });
+    });
+    netConn.on('data', d => {
+      if (d.type === 'hello' && !gotHello) {
+        gotHello = true;
+        startOnlineGame('right', d.nick);
+        netConn.on('data', dd => activeGame && activeGame.netReceive(dd));
+      } else if (gotHello) {
+        activeGame && activeGame.netReceive(d);
       }
     });
-    conn.on('error',e=>toast('Connection error'));
-    setTimeout(()=>{ if(!game&&screens==='join') toast('Could not connect'); },10000);
-  }catch(e){ toast('Error: '+e); }
+    netConn.on('close', () => { if (activeGame) { activeGame.destroy(); toast('Opponent disconnected'); openMenu(); } });
+    netConn.on('error', err => toast('Connection error: ' + err));
+  } catch (e) {
+    toast('Error: ' + e);
+  }
 }
 
-// ════════════════════════════════════════════════════
-//  GAME ENGINE
-// ════════════════════════════════════════════════════
+function startOnlineGame(mySide, opNick) {
+  lastMode = 'online';
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = 'ONLINE'; badge.className = 'mode-badge online';
+  const leftNick  = mySide === 'left'  ? myNick : (opNick || 'OPP');
+  const rightNick = mySide === 'right' ? myNick : (opNick || 'OPP');
+  document.getElementById('lbl-l').textContent = leftNick.slice(0, 8).toUpperCase();
+  document.getElementById('lbl-r').textContent = rightNick.slice(0, 8).toUpperCase();
+  showScreen('game-scr');
+  if (activeGame) activeGame.destroy();
+  activeGame = new AirHockey({ mode: 'online', mySide, ranked: false });
+  activeGame.start();
+}
 
-const canvas=$('gc');
-const ctx=canvas.getContext('2d');
-let game=null;
-const GOALS_WIN=5;
-const GAME_SECS=90;
-const PR=13, MR=26;  // puck radius, mallet radius
+// ████████████████████████████████████████████████
+//   START BOT GAME
+// ████████████████████████████████████████████████
+let activeGame = null;
 
-// Bot configs
-const BOTS={
-  easy:{spd:3.0,pred:.25,jitter:.18,returnBias:.22,shootChance:.3,thinkDelay:8},
-  med: {spd:5.2,pred:.60,jitter:.09,returnBias:.3,shootChance:.6,thinkDelay:4},
-  hard:{spd:8.5,pred:.90,jitter:.03,returnBias:.36,shootChance:.9,thinkDelay:1}
+function startBotGame() {
+  lastMode = 'bot';
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = isRanked ? 'RANKED' : 'UNRANKED';
+  badge.className = 'mode-badge' + (isRanked ? ' ranked' : '');
+  document.getElementById('lbl-l').textContent = (myNick || 'YOU').slice(0, 8).toUpperCase();
+  document.getElementById('lbl-r').textContent = 'BOT';
+  showScreen('game-scr');
+  if (activeGame) activeGame.destroy();
+  activeGame = new AirHockey({ mode: 'bot', diff: selDiff, ranked: isRanked });
+  activeGame.start();
+}
+
+// ████████████████████████████████████████████████
+//   PHYSICS HELPER
+// ████████████████████████████████████████████████
+class Vec2 {
+  constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+  set(x, y)  { this.x = x; this.y = y; return this; }
+  clone()    { return new Vec2(this.x, this.y); }
+  len()      { return Math.hypot(this.x, this.y); }
+  norm()     { const l = this.len(); return l ? new Vec2(this.x / l, this.y / l) : new Vec2(); }
+}
+
+// ████████████████████████████████████████████████
+//   GAME ENGINE
+// ████████████████████████████████████████████████
+const GOALS_TO_WIN = 5;
+const MATCH_SECONDS = 90;
+const PUCK_R  = 16;
+const MALLET_R = 32;
+
+// Bot difficulty parameters
+const BOT = {
+  easy: { speed: 2.6,  predict: 0.20, jitter: 0.22, shootProb: 0.25, thinkMs: 160, fakeProb: 0.08 },
+  med:  { speed: 5.0,  predict: 0.58, jitter: 0.10, shootProb: 0.60, thinkMs:  60, fakeProb: 0.20 },
+  hard: { speed: 8.4,  predict: 0.90, jitter: 0.03, shootProb: 0.90, thinkMs:  12, fakeProb: 0.38 }
 };
 
-function launchGame(mode){
-  lastGameMode=mode;
-  const mb=$('mbdg');
-  mb.textContent=isRanked?'RANKED':'UNRANKED';
-  mb.className='badge'+(isRanked?' rk':'');
-  $('sl1').textContent=(nick||'YOU').slice(0,8).toUpperCase();
-  $('sl2').textContent='BOT';
-  show('game');
-  if(game) game.destroy();
-  game=new Game(canvas,{mode:'bot',diff:selDiff,ranked:isRanked});
-  game.start();
-}
+class AirHockey {
+  constructor(opts) {
+    this.opts    = opts;
+    this.running = false;
+    this.paused  = false;
+    this.rafId   = null;
+    this.lastTs  = 0;
 
-function launchOnline(mySide,opNick){
-  lastGameMode='online';
-  $('mbdg').textContent='ONLINE';
-  $('mbdg').className='badge bsm';
-  $('sl1').textContent=(nick||'YOU').slice(0,8).toUpperCase();
-  $('sl2').textContent=(opNick||'OPP').slice(0,8).toUpperCase();
-  if(game) game.destroy();
-  game=new Game(canvas,{mode:'online',mySide,conn});
-  game.start();
-}
+    this.scoreL = 0;
+    this.scoreR = 0;
+    this.timeLeft = MATCH_SECONDS;
 
-// ── Vec2 ──────────────────────────────────────────────
-class V{
-  constructor(x=0,y=0){this.x=x;this.y=y;}
-  add(v){return new V(this.x+v.x,this.y+v.y);}
-  sub(v){return new V(this.x-v.x,this.y-v.y);}
-  sc(s){return new V(this.x*s,this.y*s);}
-  len(){return Math.hypot(this.x,this.y);}
-  norm(){const l=this.len();return l?new V(this.x/l,this.y/l):new V(0,0);}
-  dot(v){return this.x*v.x+this.y*v.y;}
-  clone(){return new V(this.x,this.y);}
-  set(x,y){this.x=x;this.y=y;return this;}
-}
+    this.resetting   = false;
+    this.resetFrames = 0;
+    this.lastScorer  = 'L';
 
-// ── GAME CLASS ────────────────────────────────────────
-class Game{
-  constructor(canvas,opts){
-    this.canvas=canvas;
-    this.ctx=canvas.getContext('2d');
-    this.opts=opts;
-    this.running=false;
-    this.paused=false;
-    this.rafId=null;
-    this.scoreL=0; // left player (or YOU in horizontal)
-    this.scoreR=0; // right player (or BOT/OPPONENT)
-    this.timeLeft=GAME_SECS; // seconds
-    this.lastTick=0;
-    this.goalAnim=0;
-    this.goalWho=''; // 'L' or 'R'
-    this.resetting=false;
-    this.resetTimer=0;
-    this.lastScorer='';
-    // Bot state
-    this.botTarget=new V();
-    this.botJitterX=0;
-    this.botJitterY=0;
-    this.botJitterTimer=0;
-    this.botThinkTimer=0;
-    this.botState='defend'; // 'defend','attack','chase'
+    this.goalFlash = 0;
+    this.goalSide  = '';
+
+    // Bot AI state
+    this.botThinkTimer = 0;
+    this.botJitterX = 0;
+    this.botJitterY = 0;
+    this.botJitterTimer = 0;
+    this.botFakeY = 0;
+    this.botFakeTimer = 0;
+
+    this.canvas = document.getElementById('gc');
+    this.ctx    = this.canvas.getContext('2d');
 
     this.resize();
-    this.initObjects();
-    this.bindEvents();
+    this.spawnObjects();
+    this.bindInput();
+    this.buildIceTexture();
   }
 
-  // ── Canvas sizing ────────────────────────────────────
-  resize(){
-    const wrap=$('cwrap');
-    const W=wrap.clientWidth-4, H=wrap.clientHeight-4;
-    // Horizontal field: wider than tall
-    let fw=Math.min(W, H*1.75);
-    let fh=fw/1.75;
-    if(fh>H){fh=H; fw=fh*1.75;}
-    this.W=Math.floor(fw);
-    this.H=Math.floor(fh);
-    this.canvas.width=this.W;
-    this.canvas.height=this.H;
-    // Goals on left and right walls
-    this.goalH=this.H*0.38;
-    this.goalY1=(this.H-this.goalH)/2;
-    this.goalY2=this.goalY1+this.goalH;
+  // ── RESIZE: fill canvas-wrap completely ──────────────
+  resize() {
+    const wrap = document.getElementById('canvas-wrap');
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    this.W = W; this.H = H;
+    this.canvas.width  = W;
+    this.canvas.height = H;
+    this.canvas.style.width  = W + 'px';
+    this.canvas.style.height = H + 'px';
+    // Goal dimensions (on left and right walls, horizontal field)
+    this.goalH  = H * 0.38;
+    this.goalY1 = (H - this.goalH) / 2;
+    this.goalY2 = this.goalY1 + this.goalH;
   }
 
-  // ── Init objects ─────────────────────────────────────
-  initObjects(){
-    const cx=this.W/2, cy=this.H/2;
-    this.puck={pos:new V(cx,cy),vel:new V(0,0),r:PR};
-    // Left mallet (player LEFT side)
-    this.mL={pos:new V(this.W*0.25,cy),target:new V(this.W*0.25,cy),vel:new V(0,0),prevPos:new V(this.W*0.25,cy),r:MR};
-    // Right mallet (bot / opponent)
-    this.mR={pos:new V(this.W*0.75,cy),target:new V(this.W*0.75,cy),vel:new V(0,0),prevPos:new V(this.W*0.75,cy),r:MR};
-    this.servePuck(1);
-    // Determine which mallet IS the player
-    // In online mode: mySide='left'->control mL, 'right'->control mR
-    // In bot mode: player always controls mL
-    this.playerMallet = (this.opts.mode==='online'&&this.opts.mySide==='right') ? this.mR : this.mL;
-    this.playerSide   = (this.opts.mode==='online'&&this.opts.mySide==='right') ? 'right' : 'left';
-  }
+  // ── Build ice texture once ────────────────────────────
+  buildIceTexture() {
+    const oc = document.createElement('canvas');
+    oc.width = this.W; oc.height = this.H;
+    const c = oc.getContext('2d');
 
-  servePuck(who){
-    const cx=this.W/2, cy=this.H/2;
-    this.puck.pos.set(cx,cy);
-    const angle=(who===1)
-      ? (Math.random()-0.5)*1.2
-      : Math.PI+(Math.random()-0.5)*1.2;
-    const spd=3.8;
-    this.puck.vel.set(Math.cos(angle)*spd, Math.sin(angle)*spd);
-    this.resetting=false;
-  }
+    // Ice base gradient
+    const g = c.createLinearGradient(0, 0, this.W, this.H);
+    g.addColorStop(0,   '#c2e4f6');
+    g.addColorStop(0.3, '#d6f0ff');
+    g.addColorStop(0.7, '#d6f0ff');
+    g.addColorStop(1,   '#b8dcf0');
+    c.fillStyle = g;
+    c.fillRect(0, 0, this.W, this.H);
 
-  // ── Events ───────────────────────────────────────────
-  bindEvents(){
-    this._mm=e=>this.onPointer(e.clientX,e.clientY);
-    this._tm=e=>{ e.preventDefault(); for(const t of e.touches) this.onPointer(t.clientX,t.clientY); };
-    this.canvas.addEventListener('mousemove',this._mm);
-    this.canvas.addEventListener('touchmove',this._tm,{passive:false});
-    this.canvas.addEventListener('touchstart',this._tm,{passive:false});
-
-    // Pause button in header
-    let pb=$('ghdr').querySelector('.pbtn');
-    if(!pb){
-      pb=document.createElement('button');
-      pb.className='btn bg2 pbtn';
-      pb.textContent='⏸';
-      pb.style.cssText='width:36px;padding:6px;font-size:16px;margin:0;flex-shrink:0;';
-      pb.onclick=()=>this.togglePause();
-      $('ghdr').appendChild(pb);
+    // Ice scratch lines
+    c.strokeStyle = 'rgba(255,255,255,0.55)';
+    c.lineWidth = 0.8;
+    for (let i = 0; i < 70; i++) {
+      const y = Math.random() * this.H;
+      const x0 = Math.random() * this.W;
+      const len = 40 + Math.random() * 200;
+      const wave = (Math.random() - 0.5) * 10;
+      c.beginPath();
+      c.moveTo(x0, y);
+      c.bezierCurveTo(x0 + len * 0.3, y + wave * 0.4, x0 + len * 0.7, y + wave * 0.6, x0 + len, y + wave);
+      c.stroke();
     }
+    // Sparkles
+    c.fillStyle = 'rgba(255,255,255,0.75)';
+    for (let i = 0; i < 120; i++) {
+      c.beginPath();
+      c.arc(Math.random() * this.W, Math.random() * this.H, Math.random() * 1.3, 0, Math.PI * 2);
+      c.fill();
+    }
+    this.iceTex = oc;
   }
 
-  onPointer(cx,cy){
-    if(this.paused||this.resetting) return;
-    const rect=this.canvas.getBoundingClientRect();
-    const sx=this.W/rect.width, sy=this.H/rect.height;
-    const mx=(cx-rect.left)*sx, my=(cy-rect.top)*sy;
-    const m=this.playerMallet;
+  // ── Create puck + mallets ─────────────────────────────
+  spawnObjects() {
+    const cx = this.W / 2, cy = this.H / 2;
+    this.puck = {
+      x: cx, y: cy, vx: 0, vy: 0,
+      r: PUCK_R,
+      trail: []
+    };
+    // mL = left mallet,  mR = right mallet
+    this.mL = { x: this.W * 0.22, y: cy, tx: this.W * 0.22, ty: cy, vx: 0, vy: 0, px: this.W * 0.22, py: cy, r: MALLET_R };
+    this.mR = { x: this.W * 0.78, y: cy, tx: this.W * 0.78, ty: cy, vx: 0, vy: 0, px: this.W * 0.78, py: cy, r: MALLET_R };
+
+    // In bot mode: player controls mL
+    // In online: depends on mySide
+    this.playerMallet = (this.opts.mode === 'online' && this.opts.mySide === 'right') ? this.mR : this.mL;
+    this.playerSide   = (this.opts.mode === 'online' && this.opts.mySide === 'right') ? 'right' : 'left';
+
+    this.serve(1);
+  }
+
+  serve(who) {
+    this.puck.x = this.W / 2; this.puck.y = this.H / 2;
+    this.puck.trail = [];
+    const angle = (who === 1)
+      ? (Math.random() - 0.5) * 1.1
+      : Math.PI + (Math.random() - 0.5) * 1.1;
+    const spd = 4.5;
+    this.puck.vx = Math.cos(angle) * spd;
+    this.puck.vy = Math.sin(angle) * spd;
+    this.resetting = false;
+  }
+
+  // ── Bind mouse + touch ────────────────────────────────
+  bindInput() {
+    this._onMove  = e => { e.preventDefault(); this.moveTo(e.clientX, e.clientY); };
+    this._onTouch = e => {
+      e.preventDefault();
+      // Use first touch or the one closer to player half
+      const t = e.touches[0];
+      this.moveTo(t.clientX, t.clientY);
+    };
+    this.canvas.addEventListener('mousemove',  this._onMove);
+    this.canvas.addEventListener('touchstart', this._onTouch, { passive: false });
+    this.canvas.addEventListener('touchmove',  this._onTouch, { passive: false });
+  }
+
+  moveTo(cx, cy) {
+    if (this.paused) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.W / rect.width;
+    const scaleY = this.H / rect.height;
+    const mx = (cx - rect.left)  * scaleX;
+    const my = (cy - rect.top)   * scaleY;
+    const m = this.playerMallet;
     // Clamp to player's half
-    let minX,maxX;
-    if(this.playerSide==='left'){
-      minX=m.r+1; maxX=this.W/2-m.r-1;
-    } else {
-      minX=this.W/2+m.r+1; maxX=this.W-m.r-1;
-    }
-    m.target.set(
-      Math.max(minX,Math.min(maxX,mx)),
-      Math.max(m.r+1,Math.min(this.H-m.r-1,my))
-    );
+    const minX = this.playerSide === 'left' ? m.r + 1 : this.W / 2 + m.r + 1;
+    const maxX = this.playerSide === 'left' ? this.W / 2 - m.r - 1 : this.W - m.r - 1;
+    m.tx = Math.max(minX, Math.min(maxX, mx));
+    m.ty = Math.max(m.r + 1, Math.min(this.H - m.r - 1, my));
   }
 
-  destroy(){
-    this.running=false;
-    if(this.rafId) cancelAnimationFrame(this.rafId);
-    this.canvas.removeEventListener('mousemove',this._mm);
-    this.canvas.removeEventListener('touchmove',this._tm);
-    this.canvas.removeEventListener('touchstart',this._tm);
+  // ── Lifecycle ─────────────────────────────────────────
+  destroy() {
+    this.running = false;
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.canvas.removeEventListener('mousemove',  this._onMove);
+    this.canvas.removeEventListener('touchstart', this._onTouch);
+    this.canvas.removeEventListener('touchmove',  this._onTouch);
   }
 
-  start(){
-    this.running=true;
-    this.lastTick=performance.now();
-    this.loop(this.lastTick);
+  start() {
+    this.running = true;
+    this.lastTs = performance.now();
+    this.loop(this.lastTs);
   }
 
-  togglePause(){
-    if(!this.running) return;
-    this.paused=!this.paused;
-    $('pov').classList.toggle('hide',!this.paused);
-    if(!this.paused){this.lastTick=performance.now();this.loop(this.lastTick);}
+  togglePause() {
+    if (!this.running) return;
+    this.paused = !this.paused;
+    document.getElementById('pause-scr').classList.toggle('off', !this.paused);
+    if (!this.paused) { this.lastTs = performance.now(); this.loop(this.lastTs); }
   }
-  resume(){ if(this.paused) this.togglePause(); }
+  resume() { if (this.paused) this.togglePause(); }
 
   // ── Main loop ─────────────────────────────────────────
-  loop(now){
-    if(!this.running||this.paused) return;
-    const dt=Math.min((now-this.lastTick)/16.667,3);
-    this.lastTick=now;
+  loop(now) {
+    if (!this.running || this.paused) return;
+    const dt = Math.min((now - this.lastTs) / 16.667, 3); // dt = 1 at 60fps
+    this.lastTs = now;
     this.update(dt);
-    this.draw();
-    this.rafId=requestAnimationFrame(t=>this.loop(t));
+    this.render();
+    this.rafId = requestAnimationFrame(t => this.loop(t));
   }
 
-  // ── Update ────────────────────────────────────────────
-  update(dt){
-    // Timer countdown
-    if(!this.resetting){
-      this.timeLeft-=(dt*16.667)/1000;
-      if(this.timeLeft<=0){
-        this.timeLeft=0;
-        this.endGame('time');
-        return;
-      }
-      const s=Math.ceil(this.timeLeft);
-      const mm=Math.floor(s/60), ss=s%60;
-      $('timer').textContent=`${mm}:${ss<10?'0':''}${ss}`;
-      // Flash timer red when ≤10s
-      $('timer').style.color=s<=10?'#ff3d6e':'#ffe04b';
+  // ── UPDATE ────────────────────────────────────────────
+  update(dt) {
+    // Timer
+    if (!this.resetting) {
+      this.timeLeft -= dt * 16.667 / 1000;
+      if (this.timeLeft <= 0) { this.timeLeft = 0; this.endGame(); return; }
     }
+    // Update timer display
+    const s = Math.ceil(this.timeLeft);
+    const mm = Math.floor(s / 60), ss = s % 60;
+    document.getElementById('tmr').textContent = mm + ':' + (ss < 10 ? '0' : '') + ss;
+    document.getElementById('tmr').style.color = s <= 10 ? '#ff3d6e' : '#ffe04b';
 
-    if(this.resetting){
-      this.resetTimer-=dt;
-      if(this.resetTimer<=0) this.servePuck(this.lastScorer==='L'?2:1);
+    // Reset pause
+    if (this.resetting) {
+      this.resetFrames -= dt;
+      if (this.resetFrames <= 0) this.serve(this.lastScorer === 'L' ? 2 : 1);
       return;
     }
 
+    // Move player mallet
     this.moveMallet(this.playerMallet, dt);
-    if(this.opts.mode==='bot') this.updateBot(dt);
-    else if(this.opts.mode==='online') this.updateOnlineMallet(dt);
 
-    this.updatePuck(dt);
-    this.checkGoals();
-    if(this.goalAnim>0) this.goalAnim-=dt;
-  }
-
-  // ── Player mallet movement ─────────────────────────────
-  moveMallet(m,dt){
-    const PSPD=20;
-    const dx=m.target.x-m.pos.x, dy=m.target.y-m.pos.y;
-    const d=Math.hypot(dx,dy);
-    const step=Math.min(d,PSPD*dt);
-    m.prevPos.set(m.pos.x,m.pos.y);
-    if(d>0.1){m.pos.x+=dx/d*step; m.pos.y+=dy/d*step;}
-    m.vel.set((m.pos.x-m.prevPos.x)/dt,(m.pos.y-m.prevPos.y)/dt);
-  }
-
-  // ── Bot AI (human-like) ────────────────────────────────
-  updateBot(dt){
-    const cfg=BOTS[this.opts.diff];
-    const puck=this.puck;
-    const bot=this.mR; // bot controls right side
-    const cx=this.W/2;
-
-    // Think delay
-    this.botThinkTimer-=dt;
-    if(this.botThinkTimer>0) return;
-
-    // Jitter (human movement noise)
-    this.botJitterTimer-=dt;
-    if(this.botJitterTimer<=0){
-      const mag=cfg.jitter*(this.H*0.12);
-      this.botJitterX=(Math.random()-.5)*mag;
-      this.botJitterY=(Math.random()-.5)*mag;
-      this.botJitterTimer=8+Math.random()*15;
-    }
-
-    // Decide state
-    const puckOnRight=puck.pos.x>cx;
-    const puckMovingRight=puck.vel.x>0.5;
-
-    if(puckOnRight && puck.pos.x>cx+20){
-      this.botState='chase';
-    } else if(puckMovingRight && puck.vel.x>1.5){
-      this.botState='ready';
+    // Move other mallet
+    if (this.opts.mode === 'bot') {
+      this.updateBot(dt);
     } else {
-      this.botState='defend';
-    }
-
-    let tx=cx+this.W*0.25, ty=this.H/2;
-
-    if(this.botState==='chase'){
-      // Predict puck position
-      const steps=10+Math.random()*6;
-      let px=puck.pos.x+puck.vel.x*steps*cfg.pred;
-      let py=puck.pos.y+puck.vel.y*steps*cfg.pred;
-      // Bounce off top/bottom
-      py=Math.max(PR,Math.min(this.H-PR,py));
-      if(py<PR) py=2*PR-py;
-      if(py>this.H-PR) py=2*(this.H-PR)-py;
-
-      // Sometimes aim to shoot, sometimes just intercept
-      if(Math.random()<cfg.shootChance){
-        // Position behind puck to strike it left (toward player goal)
-        tx=px+bot.r+2+Math.random()*8;
-        ty=py+this.botJitterY;
-      } else {
-        tx=Math.min(px-4,this.W-bot.r-2);
-        ty=py+this.botJitterY;
+      this.moveMallet(this.mR, dt);
+      // Send our mallet pos to peer
+      if (netConn && netConn.open) {
+        netConn.send({ type: 'mallet', x: this.playerMallet.x, y: this.playerMallet.y });
       }
-      // Clamp to right half
-      tx=Math.max(cx+bot.r+1,Math.min(this.W-bot.r-1,tx));
-      ty=Math.max(bot.r+1,Math.min(this.H-bot.r-1,ty));
+    }
 
-    } else if(this.botState==='ready'){
-      // Move to intercept position
-      const predX=cx+this.W*cfg.returnBias;
-      const predY=puck.pos.y+(puck.vel.y*(predX-puck.pos.x)/Math.max(.1,Math.abs(puck.vel.x)));
-      tx=predX+this.botJitterX;
-      ty=Math.max(bot.r+2,Math.min(this.H-bot.r-2,predY+this.botJitterY));
-      tx=Math.max(cx+bot.r+1,Math.min(this.W-bot.r-1,tx));
+    // Puck physics
+    this.updatePuck(dt);
+
+    // Check goals
+    this.checkGoals();
+
+    // Decay goal flash
+    if (this.goalFlash > 0) this.goalFlash -= dt;
+  }
+
+  // ── Smooth mallet movement ────────────────────────────
+  moveMallet(m, dt) {
+    const SPEED = 22;
+    const dx = m.tx - m.x, dy = m.ty - m.y;
+    const d = Math.hypot(dx, dy);
+    const step = Math.min(d, SPEED * dt);
+    m.px = m.x; m.py = m.y;
+    if (d > 0.1) { m.x += dx / d * step; m.y += dy / d * step; }
+    // Velocity for momentum transfer
+    m.vx = (m.x - m.px) / dt;
+    m.vy = (m.y - m.py) / dt;
+  }
+
+  // ── BOT AI ────────────────────────────────────────────
+  updateBot(dt) {
+    const cfg = BOT[this.opts.diff];
+    const P = this.puck, B = this.mR;
+    const cx = this.W / 2;
+
+    // Think delay — bot doesn't react instantly
+    this.botThinkTimer -= dt * 16.667;
+    if (this.botThinkTimer > 0) { this.moveMallet(B, dt); return; }
+    this.botThinkTimer = cfg.thinkMs;
+
+    // Jitter — human-like shakiness
+    this.botJitterTimer -= dt;
+    if (this.botJitterTimer <= 0) {
+      const mag = cfg.jitter * this.H * 0.1;
+      this.botJitterX = (Math.random() - 0.5) * mag;
+      this.botJitterY = (Math.random() - 0.5) * mag;
+      this.botJitterTimer = 5 + Math.random() * 14;
+    }
+
+    // Fake feints — occasionally wiggle to confuse player
+    this.botFakeTimer -= dt;
+    if (this.botFakeTimer <= 0 && Math.random() < cfg.fakeProb) {
+      this.botFakeY = (Math.random() - 0.5) * this.H * 0.18;
+      this.botFakeTimer = 10 + Math.random() * 12;
+    }
+
+    let tx, ty;
+    const puckOnRight   = P.x > cx * 0.85;
+    const puckMovingRight = P.vx > 0.5;
+
+    if (puckOnRight && P.x > cx + 20) {
+      // Puck in bot's zone — attack!
+      const steps = 8 + Math.random() * 10;
+      let px = P.x + P.vx * steps * cfg.predict;
+      let py = P.y + P.vy * steps * cfg.predict;
+
+      // Bounce prediction off walls
+      if (py < PUCK_R)              py = 2 * PUCK_R - py;
+      if (py > this.H - PUCK_R)    py = 2 * (this.H - PUCK_R) - py;
+
+      if (Math.random() < cfg.shootProb) {
+        // Position just behind puck to smash it left
+        tx = Math.min(px + B.r + 4, this.W - B.r - 2);
+        ty = py + this.botJitterY;
+      } else {
+        tx = Math.min(px + 2, this.W - B.r - 2);
+        ty = py + this.botJitterY;
+      }
+
+    } else if (puckMovingRight && P.vx > 1.0) {
+      // Puck incoming — move to intercept
+      const iz = cx + this.W * 0.2;
+      const travelTime = Math.max(0.1, (iz - P.x) / Math.abs(P.vx));
+      let predY = P.y + P.vy * travelTime;
+      if (predY < PUCK_R)           predY = 2 * PUCK_R - predY;
+      if (predY > this.H - PUCK_R)  predY = 2 * (this.H - PUCK_R) - predY;
+      tx = iz + this.botJitterX;
+      ty = Math.max(B.r + 2, Math.min(this.H - B.r - 2, predY + this.botJitterY));
+
     } else {
-      // Defend: stay in position, loosely track puck Y
-      tx=cx+this.W*0.24+this.botJitterX;
-      ty=this.H/2+(puck.pos.y-this.H/2)*0.35+this.botJitterY;
-      tx=Math.max(cx+bot.r+1,Math.min(this.W*0.82,tx));
-      ty=Math.max(bot.r+2,Math.min(this.H-bot.r-2,ty));
+      // Defend — guard goal center, track puck Y loosely + fake moves
+      tx = cx + this.W * 0.2 + this.botJitterX;
+      ty = this.H / 2 + (P.y - this.H / 2) * 0.38 + this.botJitterY + this.botFakeY;
     }
 
-    bot.target.set(tx,ty);
-    this.moveMallet(bot,dt);
+    // Clamp to right half
+    tx = Math.max(cx + B.r + 2, Math.min(this.W - B.r - 2, tx));
+    ty = Math.max(B.r + 2, Math.min(this.H - B.r - 2, ty));
 
-    // Random think delay for realism
-    this.botThinkTimer=cfg.thinkDelay+Math.random()*cfg.thinkDelay*0.5;
+    // Move with configured speed
+    const dx = tx - B.x, dy = ty - B.y, d = Math.hypot(dx, dy);
+    const step = Math.min(d, cfg.speed * dt);
+    B.px = B.x; B.py = B.y;
+    if (d > 0.1) { B.x += dx / d * step; B.y += dy / d * step; }
+    B.vx = (B.x - B.px) / dt;
+    B.vy = (B.y - B.py) / dt;
+    B.tx = B.x; B.ty = B.y;
   }
 
-  // ── Online: receive opponent mallet pos ────────────────
-  updateOnlineMallet(dt){
-    // Smooth move right mallet to its networked target
-    this.moveMallet(this.mR,dt);
-    // Send our mallet pos
-    if(conn&&conn.open){
-      conn.send({type:'mallet',x:this.playerMallet.pos.x,y:this.playerMallet.pos.y});
-    }
-  }
+  // ── PUCK PHYSICS ─────────────────────────────────────
+  updatePuck(dt) {
+    const P = this.puck;
+    const MAX_SPD = 26;
+    const FRICTION = 0.0008;
 
-  onNetData(d){
-    if(!d) return;
-    if(d.type==='mallet'){
-      const m=this.opts.mySide==='left'?this.mR:this.mL;
-      m.target.set(d.x,d.y);
-    }
-    if(d.type==='puck'&&this.opts.mySide==='right'){
-      this.puck.pos.set(d.x,d.y);
-      this.puck.vel.set(d.vx,d.vy);
-    }
-    if(d.type==='goal'){
-      this.scoreL=d.sl; this.scoreR=d.sr;
-      $('sp').textContent=this.opts.mySide==='left'?d.sl:d.sr;
-      $('sb2').textContent=this.opts.mySide==='left'?d.sr:d.sl;
-    }
-  }
+    // Store trail
+    P.trail.push({ x: P.x, y: P.y });
+    if (P.trail.length > 14) P.trail.shift();
 
-  onNetClose(){
-    if(this.running){
-      toast('Opponent disconnected');
-      this.destroy();
-      openMenu();
-    }
-  }
-
-  // ── Puck physics ──────────────────────────────────────
-  updatePuck(dt){
-    const p=this.puck;
-    const FRIC=0.001, MAX=22;
-    p.pos.x+=p.vel.x*dt;
-    p.pos.y+=p.vel.y*dt;
+    // Move
+    P.x += P.vx * dt;
+    P.y += P.vy * dt;
 
     // Friction
-    const spd=p.vel.len();
-    if(spd>0){ const f=FRIC*dt*spd; const ns=Math.max(0,spd-f); p.vel.x*=ns/spd; p.vel.y*=ns/spd; }
+    const spd = Math.hypot(P.vx, P.vy);
+    if (spd > 0) {
+      const ns = Math.max(0, spd - FRICTION * spd * dt);
+      P.vx *= ns / spd; P.vy *= ns / spd;
+    }
 
-    // Speed cap
-    const s2=p.vel.len();
-    if(s2>MAX){ p.vel.x*=MAX/s2; p.vel.y*=MAX/s2; }
+    // Cap speed
+    const spd2 = Math.hypot(P.vx, P.vy);
+    if (spd2 > MAX_SPD) { P.vx *= MAX_SPD / spd2; P.vy *= MAX_SPD / spd2; }
 
-    // Top/bottom walls
-    if(p.pos.y-p.r<0){ p.pos.y=p.r; p.vel.y=Math.abs(p.vel.y)*0.85; }
-    if(p.pos.y+p.r>this.H){ p.pos.y=this.H-p.r; p.vel.y=-Math.abs(p.vel.y)*0.85; }
+    // Top / bottom walls
+    if (P.y - P.r < 0)        { P.y = P.r;           P.vy =  Math.abs(P.vy) * 0.88; }
+    if (P.y + P.r > this.H)   { P.y = this.H - P.r;  P.vy = -Math.abs(P.vy) * 0.88; }
 
-    // Left/right walls (only outside goal)
-    const inGoal=p.pos.y>this.goalY1&&p.pos.y<this.goalY2;
-    if(p.pos.x-p.r<0){ if(!inGoal){ p.pos.x=p.r; p.vel.x=Math.abs(p.vel.x)*0.85; } }
-    if(p.pos.x+p.r>this.W){ if(!inGoal){ p.pos.x=this.W-p.r; p.vel.x=-Math.abs(p.vel.x)*0.85; } }
+    // Left / right walls — only bounce OUTSIDE goal opening
+    const inGoal = P.y > this.goalY1 && P.y < this.goalY2;
+    if (P.x - P.r < 0 && !inGoal)        { P.x = P.r;            P.vx =  Math.abs(P.vx) * 0.88; }
+    if (P.x + P.r > this.W && !inGoal)   { P.x = this.W - P.r;   P.vx = -Math.abs(P.vx) * 0.88; }
 
     // Goal post collisions
-    this.postCollide(p,0,this.goalY1);
-    this.postCollide(p,0,this.goalY2);
-    this.postCollide(p,this.W,this.goalY1);
-    this.postCollide(p,this.W,this.goalY2);
+    this.postCollision(P, 0,      this.goalY1);
+    this.postCollision(P, 0,      this.goalY2);
+    this.postCollision(P, this.W, this.goalY1);
+    this.postCollision(P, this.W, this.goalY2);
 
     // Mallet collisions
-    this.malletCollide(p,this.mL);
-    this.malletCollide(p,this.mR);
+    this.malletCollision(P, this.mL);
+    this.malletCollision(P, this.mR);
 
-    // Send puck state if host in online mode
-    if(this.opts.mode==='online'&&this.opts.mySide==='left'&&conn&&conn.open){
-      conn.send({type:'puck',x:p.pos.x,y:p.pos.y,vx:p.vel.x,vy:p.vel.y});
+    // Send puck state if we are the host
+    if (this.opts.mode === 'online' && this.opts.mySide === 'left' && netConn && netConn.open) {
+      netConn.send({ type: 'puck', x: P.x, y: P.y, vx: P.vx, vy: P.vy });
     }
   }
 
-  postCollide(puck,px,py){
-    const dx=puck.pos.x-px, dy=puck.pos.y-py;
-    const d=Math.hypot(dx,dy), min=puck.r+5;
-    if(d<min&&d>0){
-      const nx=dx/d,ny=dy/d;
-      puck.pos.x=px+nx*min; puck.pos.y=py+ny*min;
-      const dot=puck.vel.x*nx+puck.vel.y*ny;
-      if(dot<0){ puck.vel.x-=2*dot*nx*.85; puck.vel.y-=2*dot*ny*.85; }
+  postCollision(puck, px, py) {
+    const dx = puck.x - px, dy = puck.y - py;
+    const d  = Math.hypot(dx, dy);
+    const min = puck.r + 6;
+    if (d < min && d > 0) {
+      const nx = dx / d, ny = dy / d;
+      puck.x = px + nx * min;
+      puck.y = py + ny * min;
+      const dot = puck.vx * nx + puck.vy * ny;
+      if (dot < 0) { puck.vx -= 2 * dot * nx * 0.82; puck.vy -= 2 * dot * ny * 0.82; }
     }
   }
 
-  malletCollide(puck,mallet){
-    const dx=puck.pos.x-mallet.pos.x, dy=puck.pos.y-mallet.pos.y;
-    const d=Math.hypot(dx,dy), min=puck.r+mallet.r;
-    if(d<min&&d>0){
-      const nx=dx/d, ny=dy/d;
-      const ov=min-d;
-      puck.pos.x+=nx*ov; puck.pos.y+=ny*ov;
-      const rvx=puck.vel.x-mallet.vel.x, rvy=puck.vel.y-mallet.vel.y;
-      const dot=rvx*nx+rvy*ny;
-      if(dot<0){
-        const imp=-(1.0)*dot;
-        puck.vel.x+=nx*imp;
-        puck.vel.y+=ny*imp;
-        // Transfer mallet momentum (this creates strong smashes!)
-        puck.vel.x+=mallet.vel.x*0.65;
-        puck.vel.y+=mallet.vel.y*0.65;
-        const s=puck.vel.len();
-        if(s>MAX){ puck.vel.x*=MAX/s; puck.vel.y*=MAX/s; }
+  malletCollision(puck, mallet) {
+    const dx = puck.x - mallet.x, dy = puck.y - mallet.y;
+    const d  = Math.hypot(dx, dy);
+    const min = puck.r + mallet.r;
+    if (d < min && d > 0) {
+      const nx = dx / d, ny = dy / d;
+      const overlap = min - d;
+      puck.x += nx * overlap;
+      puck.y += ny * overlap;
+
+      const rvx = puck.vx - mallet.vx;
+      const rvy = puck.vy - mallet.vy;
+      const dot = rvx * nx + rvy * ny;
+
+      if (dot < 0) {
+        // Elastic collision + mallet momentum
+        const restitution = 1.05;
+        const imp = -restitution * dot;
+        puck.vx += nx * imp + mallet.vx * 0.72;
+        puck.vy += ny * imp + mallet.vy * 0.72;
+
+        // Cap
+        const s = Math.hypot(puck.vx, puck.vy);
+        if (s > 26) { puck.vx *= 26 / s; puck.vy *= 26 / s; }
       }
     }
   }
 
-  // ── Goal check ────────────────────────────────────────
-  checkGoals(){
-    const p=this.puck;
-    const inGoalY=p.pos.y>this.goalY1+p.r&&p.pos.y<this.goalY2-p.r;
-    if(inGoalY&&p.pos.x+p.r<0) this.goal('R'); // went into left goal → R scores
-    if(inGoalY&&p.pos.x-p.r>this.W) this.goal('L'); // right goal → L scores
+  checkGoals() {
+    const P = this.puck;
+    const inGoalY = P.y > this.goalY1 + P.r && P.y < this.goalY2 - P.r;
+    if (inGoalY && P.x + P.r < 0)        this.scoreGoal('R'); // puck in left goal  → right player scores
+    if (inGoalY && P.x - P.r > this.W)   this.scoreGoal('L'); // puck in right goal → left player scores
   }
 
-  goal(scorer){
-    if(this.resetting) return;
-    if(scorer==='L') this.scoreL++; else this.scoreR++;
-    const myScore=this.playerSide==='left'?this.scoreL:this.scoreR;
-    const opScore=this.playerSide==='left'?this.scoreR:this.scoreL;
-    $('sp').textContent=myScore;
-    $('sb2').textContent=opScore;
+  scoreGoal(scorer) {
+    if (this.resetting) return;
+    if (scorer === 'L') this.scoreL++; else this.scoreR++;
 
-    if(this.opts.mode==='online'&&conn&&conn.open){
-      conn.send({type:'goal',sl:this.scoreL,sr:this.scoreR});
+    // Update header
+    const myS = this.playerSide === 'left' ? this.scoreL : this.scoreR;
+    const opS = this.playerSide === 'left' ? this.scoreR : this.scoreL;
+    document.getElementById('sc-l').textContent = myS;
+    document.getElementById('sc-r').textContent = opS;
+
+    // Notify peer
+    if (this.opts.mode === 'online' && netConn && netConn.open) {
+      netConn.send({ type: 'goal', sl: this.scoreL, sr: this.scoreR });
     }
 
-    this.goalAnim=50; this.goalWho=scorer;
-    this.lastScorer=scorer;
-    this.resetting=true;
-    this.resetTimer=80;
-    this.puck.pos.set(this.W/2,this.H/2);
-    this.puck.vel.set(0,0);
-    this.mR.pos.set(this.W*0.75,this.H/2);
-    this.mL.pos.set(this.W*0.25,this.H/2);
+    this.goalFlash = 55;
+    this.goalSide  = scorer;
+    this.lastScorer = scorer;
+    this.resetting   = true;
+    this.resetFrames = 85;
 
-    if(this.scoreL>=GOALS_WIN||this.scoreR>=GOALS_WIN) this.endGame('goals');
+    // Reset positions
+    this.puck.x = this.W / 2; this.puck.y = this.H / 2;
+    this.puck.vx = 0; this.puck.vy = 0; this.puck.trail = [];
+    this.mL.x = this.W * 0.22; this.mL.y = this.H / 2; this.mL.tx = this.mL.x; this.mL.ty = this.mL.y;
+    this.mR.x = this.W * 0.78; this.mR.y = this.H / 2; this.mR.tx = this.mR.x; this.mR.ty = this.mR.y;
+
+    if (this.scoreL >= GOALS_TO_WIN || this.scoreR >= GOALS_TO_WIN) this.endGame();
   }
 
-  // ── End game ──────────────────────────────────────────
-  endGame(reason){
-    if(!this.running) return;
-    this.running=false;
-    if(this.rafId) cancelAnimationFrame(this.rafId);
+  // ── Network receive ───────────────────────────────────
+  netReceive(d) {
+    if (!d) return;
+    if (d.type === 'mallet') {
+      const opp = this.playerSide === 'left' ? this.mR : this.mL;
+      opp.tx = d.x; opp.ty = d.y;
+    }
+    if (d.type === 'puck' && this.opts.mySide === 'right') {
+      this.puck.x = d.x; this.puck.y = d.y;
+      this.puck.vx = d.vx; this.puck.vy = d.vy;
+    }
+    if (d.type === 'goal') {
+      this.scoreL = d.sl; this.scoreR = d.sr;
+      const myS = this.playerSide === 'left' ? d.sl : d.sr;
+      const opS = this.playerSide === 'left' ? d.sr : d.sl;
+      document.getElementById('sc-l').textContent = myS;
+      document.getElementById('sc-r').textContent = opS;
+    }
+  }
 
-    const myScore=this.playerSide==='left'?this.scoreL:this.scoreR;
-    const opScore=this.playerSide==='left'?this.scoreR:this.scoreL;
-    const won=myScore>opScore;
-    const tied=myScore===opScore;
-    const cfg=ELO[this.opts.diff]||ELO.easy;
-    let eloChange=0;
+  // ── END GAME ──────────────────────────────────────────
+  endGame() {
+    if (!this.running) return;
+    this.running = false;
+    if (this.rafId) cancelAnimationFrame(this.rafId);
 
-    if(this.opts.ranked&&this.opts.mode==='bot'){
-      eloChange=tied?0:(won?cfg.w:-cfg.l);
-      elo=Math.max(0,elo+eloChange);
-      S.s('elo',elo);
-      lbUpdate(nick,elo);
+    const myS   = this.playerSide === 'left' ? this.scoreL : this.scoreR;
+    const opS   = this.playerSide === 'left' ? this.scoreR : this.scoreL;
+    const won   = myS > opS;
+    const tied  = myS === opS;
+    let eloChange = 0;
+
+    if (this.opts.ranked && this.opts.mode === 'bot') {
+      const cfg = ELO_CFG[this.opts.diff] || ELO_CFG.easy;
+      eloChange = tied ? 0 : (won ? cfg.win : -cfg.lose);
+      myElo = Math.max(0, myElo + eloChange);
+      LS.set('elo', myElo);
+      lbPush(myNick, myElo);
     }
 
-    $('rttl').textContent=tied?'DRAW':(won?'VICTORY':'DEFEAT');
-    $('rttl').className='rttl '+(tied?'':'')+(won?'win':tied?'':'lose');
-    $('rps').textContent=myScore;
-    $('rbs').textContent=opScore;
+    document.getElementById('res-sl').textContent = myS;
+    document.getElementById('res-sr').textContent = opS;
 
-    const ecd=$('ecd');
-    if(!this.opts.ranked||this.opts.mode!=='bot'){
-      ecd.textContent='UNRANKED — NO ELO CHANGE';
-      ecd.className='ec neu';
+    const rt = document.getElementById('res-title');
+    if (tied)       { rt.textContent = 'DRAW';    rt.className = 'result-title draw'; }
+    else if (won)   { rt.textContent = 'VICTORY'; rt.className = 'result-title win'; }
+    else            { rt.textContent = 'DEFEAT';  rt.className = 'result-title lose'; }
+
+    const re = document.getElementById('res-elo');
+    if (!this.opts.ranked || this.opts.mode !== 'bot') {
+      re.textContent = 'UNRANKED — ELO UNCHANGED'; re.className = 'elo-diff zero';
     } else {
-      ecd.textContent=(eloChange>=0?'+':'')+eloChange+' ELO  →  '+elo;
-      ecd.className='ec '+(eloChange>0?'pos':'neg');
+      re.textContent = (eloChange >= 0 ? '+' : '') + eloChange + ' ELO  →  ' + myElo;
+      re.className = 'elo-diff ' + (eloChange > 0 ? 'pos' : eloChange < 0 ? 'neg' : 'zero');
     }
 
-    setTimeout(()=>show('result'),500);
+    setTimeout(() => showScreen('result-scr'), 500);
   }
 
-  // ── Draw ─────────────────────────────────────────────
-  draw(){
-    const c=this.ctx, W=this.W, H=this.H;
-    c.clearRect(0,0,W,H);
-    c.fillStyle='#060e1a'; c.fillRect(0,0,W,H);
+  // ████████████████████████████████████████████████
+  //   RENDER
+  // ████████████████████████████████████████████████
+  render() {
+    const c = this.ctx;
+    const W = this.W, H = this.H;
+    c.clearRect(0, 0, W, H);
 
-    // Grid
-    c.strokeStyle='rgba(0,229,255,0.035)'; c.lineWidth=.5;
-    for(let x=0;x<=W;x+=36){c.beginPath();c.moveTo(x,0);c.lineTo(x,H);c.stroke();}
-    for(let y=0;y<=H;y+=36){c.beginPath();c.moveTo(0,y);c.lineTo(W,y);c.stroke();}
+    // Ice background
+    if (this.iceTex) c.drawImage(this.iceTex, 0, 0);
 
-    this.drawField(c,W,H);
+    this.drawField(c, W, H);
     this.drawPuck(c);
-    this.drawMallet(c,this.mR,'#ff3d6e',(this.opts.mode==='online'&&this.opts.mySide==='right')?'YOU':'OPP');
-    this.drawMallet(c,this.mL,'#00e5ff',(this.opts.mode==='online'&&this.opts.mySide==='left')?'YOU':(nick||'YOU').slice(0,3).toUpperCase());
 
-    // Goal flash
-    if(this.goalAnim>0){
-      const a=Math.min(.2,this.goalAnim/50*.2);
-      c.fillStyle=this.goalWho==='L'?`rgba(255,61,110,${a})`:`rgba(0,229,255,${a})`;
-      c.fillRect(0,0,W,H);
-      // GOAL text
-      c.save();
-      c.font=`900 ${H*.18}px 'Segoe UI',sans-serif`;
-      c.textAlign='center'; c.textBaseline='middle';
-      c.fillStyle=this.goalWho==='L'?'rgba(255,61,110,.25)':'rgba(0,229,255,.25)';
-      c.fillText('GOAL!',W/2,H/2);
-      c.restore();
-    }
+    // Draw mallets (left = blue/player, right = red/bot)
+    const isOnlineRight = this.opts.mode === 'online' && this.opts.mySide === 'right';
+    this.drawMallet(c, this.mL, '#1155bb', '#4488ff', isOnlineRight ? 'OPP' : (myNick || 'YOU').slice(0, 3).toUpperCase());
+    this.drawMallet(c, this.mR, '#bb1133', '#ff3355', isOnlineRight ? 'YOU' : 'BOT');
+
+    this.drawGoalFlash(c, W, H);
   }
 
-  drawField(c,W,H){
-    const cx=W/2, cy=H/2;
-    const gy1=this.goalY1, gy2=this.goalY2;
+  drawField(c, W, H) {
+    const cx = W / 2, cy = H / 2;
+    const gy1 = this.goalY1, gy2 = this.goalY2, gH = gy2 - gy1;
 
-    // Left goal zone
-    c.fillStyle='rgba(0,229,255,0.05)'; c.fillRect(0,gy1,W*.07,gy2-gy1);
-    // Right goal zone
-    c.fillStyle='rgba(255,61,110,0.05)'; c.fillRect(W*.93,gy1,W*.07,gy2-gy1);
+    // ── Board zones (top and bottom) ──
+    c.fillStyle = 'rgba(10,40,100,0.25)';
+    c.fillRect(0, 0, W, gy1);
+    c.fillRect(0, gy2, W, H - gy2);
 
-    // Goal lines
-    c.lineWidth=2;
-    c.strokeStyle='rgba(0,229,255,.55)';
-    c.beginPath(); c.moveTo(1,gy1); c.lineTo(1,gy2); c.stroke();
-    c.strokeStyle='rgba(255,61,110,.55)';
-    c.beginPath(); c.moveTo(W-1,gy1); c.lineTo(W-1,gy2); c.stroke();
+    // ── Board rails ──
+    c.strokeStyle = '#1a4899'; c.lineWidth = 7;
+    c.beginPath(); c.moveTo(0, gy1); c.lineTo(W, gy1); c.stroke();
+    c.beginPath(); c.moveTo(0, gy2); c.lineTo(W, gy2); c.stroke();
 
-    // Goal posts
-    const pr=5;
-    [[0,gy1],[0,gy2]].forEach(([px,py])=>{
-      c.beginPath();c.arc(px,py,pr,0,Math.PI*2);
-      c.fillStyle='rgba(0,229,255,.8)';c.fill();
-      c.strokeStyle='#00e5ff';c.lineWidth=1.5;c.stroke();
+    // ── Red goal lines (left & right edges) ──
+    c.strokeStyle = '#cc2233'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(1, gy1); c.lineTo(1, gy2); c.stroke();
+    c.beginPath(); c.moveTo(W - 1, gy1); c.lineTo(W - 1, gy2); c.stroke();
+
+    // ── Goal areas (trapezoid-style boxes) ──
+    const gd = W * 0.10;
+    c.strokeStyle = 'rgba(200,35,50,0.6)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(gd, gy1); c.lineTo(gd, gy2); c.stroke();
+    c.beginPath(); c.moveTo(W - gd, gy1); c.lineTo(W - gd, gy2); c.stroke();
+
+    c.fillStyle = 'rgba(200,40,55,0.07)';
+    c.fillRect(1, gy1, gd, gH);
+    c.fillRect(W - gd, gy1, gd, gH);
+
+    // Goal semicircles
+    c.beginPath(); c.arc(0, cy, gd * 0.85, -Math.PI / 2, Math.PI / 2);
+    c.strokeStyle = 'rgba(200,40,55,0.4)'; c.lineWidth = 1.5; c.stroke();
+    c.beginPath(); c.arc(W, cy, gd * 0.85, Math.PI / 2, -Math.PI / 2);
+    c.stroke();
+
+    // ── Goal posts ──
+    [[0, gy1], [0, gy2], [W, gy1], [W, gy2]].forEach(([px, py]) => {
+      c.beginPath(); c.arc(px, py, 8, 0, Math.PI * 2);
+      c.fillStyle = '#cc2233'; c.fill();
+      c.strokeStyle = '#ff4455'; c.lineWidth = 2; c.stroke();
     });
-    [[W,gy1],[W,gy2]].forEach(([px,py])=>{
-      c.beginPath();c.arc(px,py,pr,0,Math.PI*2);
-      c.fillStyle='rgba(255,61,110,.8)';c.fill();
-      c.strokeStyle='#ff3d6e';c.lineWidth=1.5;c.stroke();
-    });
 
-    // Top/bottom walls
-    c.strokeStyle='rgba(255,255,255,.15)'; c.lineWidth=2;
-    c.beginPath();c.moveTo(0,0);c.lineTo(W,0);c.stroke();
-    c.beginPath();c.moveTo(0,H);c.lineTo(W,H);c.stroke();
+    // ── Blue zone lines ──
+    const bl = W * 0.27;
+    c.strokeStyle = 'rgba(30,80,210,0.75)'; c.lineWidth = 5;
+    c.beginPath(); c.moveTo(bl, gy1); c.lineTo(bl, gy2); c.stroke();
+    c.beginPath(); c.moveTo(W - bl, gy1); c.lineTo(W - bl, gy2); c.stroke();
+    // Neutral zone tint
+    c.fillStyle = 'rgba(20,60,180,0.04)';
+    c.fillRect(bl, gy1, W - bl * 2, gH);
 
-    // Center line (dashed)
-    c.strokeStyle='rgba(255,255,255,.1)'; c.lineWidth=1;
-    c.setLineDash([7,7]);
-    c.beginPath();c.moveTo(cx,0);c.lineTo(cx,H);c.stroke();
-    c.setLineDash([]);
+    // ── Center red line ──
+    c.strokeStyle = '#cc2233'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(cx, gy1); c.lineTo(cx, gy2); c.stroke();
 
-    // Center circle
-    c.beginPath();c.arc(cx,cy,H*.13,0,Math.PI*2);
-    c.strokeStyle='rgba(255,255,255,.08)';c.lineWidth=1.5;c.stroke();
-
+    // ── Center circle ──
+    const cr = Math.min(gH * 0.30, W * 0.10);
+    c.beginPath(); c.arc(cx, cy, cr, 0, Math.PI * 2);
+    c.strokeStyle = 'rgba(195,30,50,0.75)'; c.lineWidth = 2.5; c.stroke();
+    // Hash marks on circle
+    c.strokeStyle = 'rgba(195,30,50,0.55)'; c.lineWidth = 2;
+    for (const dx of [-cr * 0.38, cr * 0.38]) {
+      c.beginPath(); c.moveTo(cx + dx, cy - cr * 0.18); c.lineTo(cx + dx, cy + cr * 0.18); c.stroke();
+    }
     // Center dot
-    c.beginPath();c.arc(cx,cy,3.5,0,Math.PI*2);
-    c.fillStyle='rgba(255,255,255,.2)';c.fill();
+    c.beginPath(); c.arc(cx, cy, 7, 0, Math.PI * 2);
+    c.fillStyle = '#cc2233'; c.fill();
 
-    // Half tints
-    c.fillStyle='rgba(0,229,255,0.025)'; c.fillRect(0,0,cx,H);
-    c.fillStyle='rgba(255,61,110,0.025)'; c.fillRect(cx,0,W-cx,H);
+    // ── Face-off circles ──
+    const fcr = Math.min(gH * 0.22, W * 0.09);
+    [W * 0.24, W * 0.76].forEach(fx => {
+      c.beginPath(); c.arc(fx, cy, fcr, 0, Math.PI * 2);
+      c.strokeStyle = 'rgba(195,30,50,0.55)'; c.lineWidth = 2; c.stroke();
+      c.strokeStyle = 'rgba(195,30,50,0.4)'; c.lineWidth = 1.5;
+      for (const dx of [-fcr * 0.38, fcr * 0.38]) {
+        c.beginPath(); c.moveTo(fx + dx, cy - fcr * 0.18); c.lineTo(fx + dx, cy + fcr * 0.18); c.stroke();
+      }
+      c.beginPath(); c.arc(fx, cy, 5, 0, Math.PI * 2);
+      c.fillStyle = 'rgba(195,30,50,0.7)'; c.fill();
+    });
   }
 
-  drawPuck(c){
-    const p=this.puck;
-    const spd=p.vel.len();
+  drawPuck(c) {
+    const P = this.puck;
+    const spd = Math.hypot(P.vx, P.vy);
 
-    // Motion trail
-    if(spd>1.5){
-      const tl=Math.min(spd*2.5,28);
-      const nx=-p.vel.x/spd, ny=-p.vel.y/spd;
-      const gr=c.createLinearGradient(p.pos.x,p.pos.y,p.pos.x+nx*tl,p.pos.y+ny*tl);
-      gr.addColorStop(0,'rgba(255,224,75,.6)');
-      gr.addColorStop(1,'rgba(255,224,75,0)');
-      c.beginPath();c.ellipse(p.pos.x,p.pos.y,p.r*.7,p.r*.5,Math.atan2(p.vel.y,p.vel.x),0,Math.PI*2);
-      c.fillStyle=gr;c.fill();
+    // Trail
+    if (P.trail.length > 1) {
+      for (let i = 1; i < P.trail.length; i++) {
+        const t = P.trail[i];
+        const a = (i / P.trail.length) * 0.38;
+        const r = P.r * (i / P.trail.length) * 0.85;
+        c.beginPath(); c.arc(t.x, t.y, r, 0, Math.PI * 2);
+        c.fillStyle = `rgba(10,10,20,${a})`; c.fill();
+      }
     }
 
-    // Glow
-    const gl=c.createRadialGradient(p.pos.x,p.pos.y,0,p.pos.x,p.pos.y,p.r*2.8);
-    gl.addColorStop(0,'rgba(255,224,75,.22)');gl.addColorStop(1,'transparent');
-    c.beginPath();c.arc(p.pos.x,p.pos.y,p.r*2.8,0,Math.PI*2);
-    c.fillStyle=gl;c.fill();
+    // Shadow
+    c.beginPath(); c.ellipse(P.x + 4, P.y + 5, P.r * 0.9, P.r * 0.45, 0, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(0,0,0,0.3)'; c.fill();
 
-    // Body
-    c.beginPath();c.arc(p.pos.x,p.pos.y,p.r,0,Math.PI*2);
-    c.fillStyle='#ffe04b';c.fill();
-    c.strokeStyle='#fff9c4';c.lineWidth=1.5;c.stroke();
+    // Puck body — black rubber disc with gradient
+    c.beginPath(); c.arc(P.x, P.y, P.r, 0, Math.PI * 2);
+    const g = c.createRadialGradient(P.x - P.r * 0.3, P.y - P.r * 0.3, 0, P.x, P.y, P.r);
+    g.addColorStop(0, '#575757');
+    g.addColorStop(0.5, '#1e1e1e');
+    g.addColorStop(1, '#0e0e0e');
+    c.fillStyle = g; c.fill();
+    c.strokeStyle = '#444'; c.lineWidth = 1.5; c.stroke();
 
-    // Inner
-    c.beginPath();c.arc(p.pos.x,p.pos.y,p.r*.5,0,Math.PI*2);
-    c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1.5;c.stroke();
+    // Gloss highlight
+    c.beginPath(); c.arc(P.x - P.r * 0.3, P.y - P.r * 0.32, P.r * 0.3, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255,255,255,0.18)'; c.fill();
+
+    // Speed glow
+    if (spd > 3) {
+      const intensity = Math.min(0.32, spd * 0.013);
+      const gl = c.createRadialGradient(P.x, P.y, 0, P.x, P.y, P.r * 3);
+      gl.addColorStop(0, `rgba(255,200,30,${intensity})`);
+      gl.addColorStop(1, 'transparent');
+      c.beginPath(); c.arc(P.x, P.y, P.r * 3, 0, Math.PI * 2);
+      c.fillStyle = gl; c.fill();
+    }
   }
 
-  drawMallet(c,m,col,lbl){
-    const {pos,r}=m;
+  drawMallet(c, m, darkCol, lightCol, label) {
+    const r = m.r;
+    // Shadow
+    c.beginPath(); c.ellipse(m.x + 5, m.y + 6, r * 0.92, r * 0.52, 0, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(0,0,0,0.28)'; c.fill();
 
-    // Glow
-    const gl=c.createRadialGradient(pos.x,pos.y,r*.4,pos.x,pos.y,r*2.4);
-    gl.addColorStop(0,col+'55');gl.addColorStop(1,'transparent');
-    c.beginPath();c.arc(pos.x,pos.y,r*2.4,0,Math.PI*2);
-    c.fillStyle=gl;c.fill();
+    // Base fill
+    c.beginPath(); c.arc(m.x, m.y, r, 0, Math.PI * 2);
+    c.fillStyle = darkCol; c.fill();
 
-    // Body
-    c.beginPath();c.arc(pos.x,pos.y,r,0,Math.PI*2);
-    const bg=c.createRadialGradient(pos.x-r*.3,pos.y-r*.3,0,pos.x,pos.y,r);
-    bg.addColorStop(0,col+'bb');bg.addColorStop(1,col+'33');
-    c.fillStyle=bg;c.fill();
-    c.strokeStyle=col;c.lineWidth=2;c.stroke();
+    // Gradient overlay
+    const bg = c.createRadialGradient(m.x - r * 0.28, m.y - r * 0.32, 0, m.x, m.y, r);
+    bg.addColorStop(0,  lightCol + 'ee');
+    bg.addColorStop(0.5, darkCol + 'cc');
+    bg.addColorStop(1,  darkCol + '77');
+    c.fillStyle = bg; c.fill();
+
+    // White rim
+    c.beginPath(); c.arc(m.x, m.y, r, 0, Math.PI * 2);
+    c.strokeStyle = 'rgba(255,255,255,0.42)'; c.lineWidth = 2.5; c.stroke();
 
     // Inner ring
-    c.beginPath();c.arc(pos.x,pos.y,r*.42,0,Math.PI*2);
-    c.strokeStyle=col+'88';c.lineWidth=1.5;c.stroke();
+    c.beginPath(); c.arc(m.x, m.y, r * 0.5, 0, Math.PI * 2);
+    c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = 2; c.stroke();
+
+    // Cross lines (hockey puck detail)
+    c.save(); c.globalAlpha = 0.2; c.strokeStyle = '#fff'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(m.x - r * 0.44, m.y); c.lineTo(m.x + r * 0.44, m.y); c.stroke();
+    c.beginPath(); c.moveTo(m.x, m.y - r * 0.44); c.lineTo(m.x, m.y + r * 0.44); c.stroke();
+    c.restore();
+
+    // Specular highlight
+    c.beginPath(); c.arc(m.x - r * 0.3, m.y - r * 0.3, r * 0.28, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(255,255,255,0.24)'; c.fill();
 
     // Label
     c.save();
-    c.font=`700 ${r*.52}px 'Segoe UI',sans-serif`;
-    c.textAlign='center';c.textBaseline='middle';
-    c.fillStyle='#fff';
-    c.shadowColor=col;c.shadowBlur=8;
-    c.fillText(lbl.slice(0,3),pos.x,pos.y);
-    c.shadowBlur=0;
+    c.font = `800 ${Math.round(r * 0.48)}px 'Segoe UI', Arial, sans-serif`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.shadowColor = 'rgba(0,0,0,0.9)'; c.shadowBlur = 5;
+    c.fillStyle = '#fff';
+    c.fillText(label.slice(0, 3), m.x, m.y + 1);
     c.restore();
+  }
+
+  drawGoalFlash(c, W, H) {
+    if (this.goalFlash <= 0) return;
+    const alpha = Math.min(0.28, this.goalFlash / 55 * 0.28);
+
+    // Flash the side that CONCEDED (to highlight where the goal went in)
+    if (this.goalSide === 'R') {
+      // R scored = went into LEFT goal
+      c.fillStyle = `rgba(255,61,110,${alpha})`;
+      c.fillRect(0, 0, W / 2, H);
+    } else {
+      // L scored = went into RIGHT goal
+      c.fillStyle = `rgba(0,180,255,${alpha})`;
+      c.fillRect(W / 2, 0, W / 2, H);
+    }
+
+    // "GOAL!" text
+    if (this.goalFlash > 18) {
+      c.save();
+      c.font = `900 ${Math.round(H * 0.14)}px 'Segoe UI', Arial, sans-serif`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillStyle = this.goalSide === 'R'
+        ? 'rgba(255,61,110,0.52)'
+        : 'rgba(0,180,255,0.52)';
+      c.fillText('GOAL!', W / 2, H / 2);
+      c.restore();
+    }
   }
 }
 
-// ── Window resize ─────────────────────────────────────
-window.addEventListener('resize',()=>{
-  if(game&&game.running){
-    const ow=game.W,oh=game.H;
-    game.resize();
-    const sx=game.W/ow,sy=game.H/oh;
-    game.puck.pos.x*=sx;game.puck.pos.y*=sy;
-    game.puck.vel.x*=sx;game.puck.vel.y*=sy;
-    game.mL.pos.x*=sx;game.mL.pos.y*=sy;
-    game.mL.target.x*=sx;game.mL.target.y*=sy;
-    game.mR.pos.x*=sx;game.mR.pos.y*=sy;
-    game.mR.target.x*=sx;game.mR.target.y*=sy;
-    game.goalY1=(game.H-game.H*.38)/2;
-    game.goalY2=game.goalY1+game.H*.38;
+// ████████████████████████████████████████████████
+//   WINDOW RESIZE
+// ████████████████████████████████████████████████
+window.addEventListener('resize', () => {
+  if (!activeGame || !activeGame.running) return;
+  const oldW = activeGame.W, oldH = activeGame.H;
+  activeGame.resize();
+  const sx = activeGame.W / oldW, sy = activeGame.H / oldH;
+  const P = activeGame.puck;
+  P.x *= sx; P.y *= sy; P.vx *= sx; P.vy *= sy;
+  for (const m of [activeGame.mL, activeGame.mR]) {
+    m.x *= sx; m.y *= sy; m.tx *= sx; m.ty *= sy;
   }
+  activeGame.goalY1 = (activeGame.H - activeGame.H * 0.38) / 2;
+  activeGame.goalY2 = activeGame.goalY1 + activeGame.H * 0.38;
+  activeGame.buildIceTexture();
 });
 
-// ── Load PeerJS for online ─────────────────────────────
-(function(){
-  const s=document.createElement('script');
-  s.src='https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
-  s.onerror=()=>{ $('bhost').disabled=true; $('bjoin').disabled=true;
-    $('bhost').textContent='P2P UNAVAILABLE'; $('bjoin').textContent='P2P UNAVAILABLE'; };
+// ████████████████████████████████████████████████
+//   LOAD PEERJS + BOOT
+// ████████████████████████████████████████████████
+(function loadPeerJS() {
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js';
+  s.onload  = () => console.log('PeerJS ready');
+  s.onerror = () => {
+    document.getElementById('btn-host').textContent = 'ONLINE UNAVAILABLE';
+    document.getElementById('btn-join').textContent = 'ONLINE UNAVAILABLE';
+    document.getElementById('btn-host').disabled = true;
+    document.getElementById('btn-join').disabled = true;
+    console.warn('PeerJS failed to load');
+  };
   document.head.appendChild(s);
 })();
 
-// ── Boot ─────────────────────────────────────────────
+// ── BOOT ──────────────────────────────────────────
+function boot() {
+  if (myNick) openMenu();
+  else showScreen('nick-scr');
+}
 boot();
 </script>
 </body>
